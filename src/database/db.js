@@ -171,6 +171,29 @@ db.exec(`
     comment        TEXT,
     created_at     TEXT DEFAULT (datetime('now'))
   );
+
+  -- CHAT / MENSAJERÍA
+  CREATE TABLE IF NOT EXISTS conversations (
+    id             TEXT PRIMARY KEY,
+    buyer_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    distributor_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id     TEXT REFERENCES products(id) ON DELETE SET NULL,
+    last_message   TEXT,
+    last_at        TEXT DEFAULT (datetime('now')),
+    unread_buyer   INTEGER DEFAULT 0,
+    unread_dist    INTEGER DEFAULT 0,
+    created_at     TEXT DEFAULT (datetime('now')),
+    UNIQUE(buyer_id, distributor_id, product_id)
+  );
+
+  CREATE TABLE IF NOT EXISTS messages (
+    id              TEXT PRIMARY KEY,
+    conversation_id TEXT NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    sender_id       TEXT NOT NULL REFERENCES users(id),
+    body            TEXT NOT NULL,
+    read_at         TEXT,
+    created_at      TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // ── Migraciones para tablas existentes ───────────────────────────────

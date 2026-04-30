@@ -36,6 +36,7 @@ app.use('/api/inventory', require('./src/routes/inventory'));
 app.use('/api/analytics', require('./src/routes/analytics'));
 app.use('/api/admin',      require('./src/routes/admin'));
 app.use('/api/promotions', require('./src/routes/promotions'));
+app.use('/api/chat',      require('./src/routes/chat'));
 
 // ── Health check ──────────────────────────────────────────────────
 app.get('/api/health', (req, res) => {

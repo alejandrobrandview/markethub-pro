@@ -1127,6 +1127,197 @@ const SuccessOverlay=({onClose})=>(
 );
 
 /* ═══════════════════════════════════
+   CHAT MÓVIL
+═══════════════════════════════════ */
+const MOCK_MOVIL_CONVS=[
+  {id:'c1',dist_name:'Grupo Alianza MX',company_name:'Grupo Alianza MX',product_name:'Arroz Extra Premium 5kg',last_message:'¿Tienen disponibilidad para la próxima semana?',last_at:'2024-04-24T10:30:00',unread_buyer:2},
+  {id:'c2',dist_name:'Distribuidora del Norte',company_name:'Distribuidora del Norte',product_name:'Frijol Negro 1kg',last_message:'Claro, le enviamos cotización.',last_at:'2024-04-23T14:00:00',unread_buyer:0},
+  {id:'c3',dist_name:'Alimentos Centrales SA',company_name:'Alimentos Centrales SA',product_name:'Café Molido 1kg',last_message:'Mínimo 6 bolsas por pedido.',last_at:'2024-04-22T09:15:00',unread_buyer:1},
+];
+const MOCK_MOVIL_MSGS={
+  c1:[
+    {id:'m1',sender_role:'buyer',body:'Hola, vi su catálogo. ¿Manejan precios especiales para pedidos frecuentes?',created_at:'2024-04-24T09:00:00'},
+    {id:'m2',sender_role:'distributor',sender_name:'Grupo Alianza MX',body:'¡Hola! Claro. Para clientes frecuentes tenemos hasta 5% adicional en pedidos mensuales.',created_at:'2024-04-24T09:15:00'},
+    {id:'m3',sender_role:'buyer',body:'¿Tienen disponibilidad para la próxima semana?',created_at:'2024-04-24T10:30:00'},
+  ],
+  c2:[
+    {id:'m4',sender_role:'buyer',body:'Buenas, necesito 200 unidades de Frijol Negro 1kg.',created_at:'2024-04-23T13:00:00'},
+    {id:'m5',sender_role:'distributor',sender_name:'Distribuidora del Norte',body:'Claro, le enviamos cotización.',created_at:'2024-04-23T14:00:00'},
+  ],
+  c3:[
+    {id:'m6',sender_role:'buyer',body:'¿Cuál es el pedido mínimo del café?',created_at:'2024-04-22T09:00:00'},
+    {id:'m7',sender_role:'distributor',sender_name:'Alimentos Centrales SA',body:'Mínimo 6 bolsas por pedido.',created_at:'2024-04-22T09:15:00'},
+  ],
+};
+
+const ChatMovilScreen=()=>{
+  const API=window.location.origin;
+  const [convs,setConvs]=useState(MOCK_MOVIL_CONVS);
+  const [active,setActive]=useState(null);
+  const [msgs,setMsgs]=useState([]);
+  const [input,setInput]=useState('');
+  const messagesEnd=useRef(null);
+
+  const loadMsgs=async(convId)=>{
+    try{
+      const token=localStorage.getItem('mhToken');
+      const r=await fetch(`${API}/api/chat/conversations/${convId}/messages`,{headers:{Authorization:`Bearer ${token}`}});
+      if(!r.ok)throw new Error();
+      const d=await r.json();
+      setMsgs(d.messages);
+    }catch{
+      setMsgs(MOCK_MOVIL_MSGS[convId]||[]);
+    }
+    // Marcar como leído
+    setConvs(prev=>prev.map(c=>c.id===convId?{...c,unread_buyer:0}:c));
+  };
+
+  useEffect(()=>{
+    if(!active)return;
+    loadMsgs(active.id);
+    const iv=setInterval(()=>loadMsgs(active.id),4000);
+    return ()=>clearInterval(iv);
+  },[active]);
+
+  useEffect(()=>{ messagesEnd.current?.scrollIntoView({behavior:'smooth'}); },[msgs]);
+
+  const send=async()=>{
+    if(!input.trim()||!active)return;
+    const body=input.trim();
+    setInput('');
+    const opt={id:'tmp'+Date.now(),sender_role:'buyer',body,created_at:new Date().toISOString()};
+    setMsgs(prev=>[...prev,opt]);
+    setConvs(prev=>prev.map(c=>c.id===active.id?{...c,last_message:body,last_at:new Date().toISOString()}:c));
+    try{
+      const token=localStorage.getItem('mhToken');
+      await fetch(`${API}/api/chat/conversations/${active.id}/messages`,{
+        method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({body})
+      });
+      loadMsgs(active.id);
+    }catch{}
+  };
+
+  const fmtTime=(iso)=>new Date(iso).toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
+  const fmtDate=(iso)=>{
+    const d=new Date(iso);
+    const today=new Date();
+    if(d.toDateString()===today.toDateString())return fmtTime(iso);
+    return d.toLocaleDateString('es-MX',{day:'numeric',month:'short'});
+  };
+
+  // Vista de conversación individual
+  if(active){
+    return(
+      <div className="screen fade-in" style={{display:'flex',flexDirection:'column',background:'#f8fafc'}}>
+        <StatusBar/>
+        {/* Header */}
+        <div style={{background:'#fff',padding:'12px 16px',display:'flex',alignItems:'center',gap:12,borderBottom:'1px solid #f1f5f9',flexShrink:0}}>
+          <button onClick={()=>setActive(null)} style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:'#0ea5e9',padding:0,lineHeight:1}}>←</button>
+          <div style={{width:38,height:38,borderRadius:'50%',background:'linear-gradient(135deg,#0ea5e9,#6366f1)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:16,flexShrink:0}}>
+            {active.company_name?.charAt(0)}
+          </div>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontWeight:700,fontSize:14,color:'#111827',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{active.company_name}</div>
+            {active.product_name&&<div style={{fontSize:11,color:'#0ea5e9',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>📦 {active.product_name}</div>}
+          </div>
+        </div>
+
+        {/* Mensajes */}
+        <div style={{flex:1,overflowY:'auto',padding:'16px 14px',display:'flex',flexDirection:'column',gap:10}}>
+          {msgs.map(m=>{
+            const isMe=m.sender_role==='buyer';
+            return(
+              <div key={m.id} style={{display:'flex',justifyContent:isMe?'flex-end':'flex-start'}}>
+                <div style={{maxWidth:'78%'}}>
+                  {!isMe&&<div style={{fontSize:10,color:'#9ca3af',marginBottom:3,marginLeft:4}}>{m.sender_name||active.company_name}</div>}
+                  <div style={{
+                    padding:'10px 14px',borderRadius:isMe?'18px 18px 4px 18px':'18px 18px 18px 4px',
+                    fontSize:13,lineHeight:1.5,
+                    background:isMe?'#0ea5e9':'#fff',
+                    color:isMe?'#fff':'#1f2937',
+                    boxShadow:'0 1px 4px rgba(0,0,0,0.07)'
+                  }}>
+                    {m.body}
+                  </div>
+                  <div style={{fontSize:10,color:'#9ca3af',marginTop:3,textAlign:isMe?'right':'left',padding:'0 4px'}}>{fmtTime(m.created_at)}</div>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={messagesEnd}/>
+        </div>
+
+        {/* Input */}
+        <div style={{background:'#fff',padding:'10px 14px',borderTop:'1px solid #f1f5f9',display:'flex',gap:10,alignItems:'center',flexShrink:0}}>
+          <input
+            style={{flex:1,border:'1.5px solid #e2e8f0',borderRadius:22,padding:'10px 16px',fontSize:14,outline:'none',background:'#f8fafc',color:'#1f2937'}}
+            placeholder="Escribe un mensaje..."
+            value={input}
+            onChange={e=>setInput(e.target.value)}
+            onKeyDown={e=>{if(e.key==='Enter')send();}}
+          />
+          <button onClick={send} disabled={!input.trim()} style={{
+            width:42,height:42,borderRadius:'50%',border:'none',flexShrink:0,cursor:'pointer',
+            background:input.trim()?'#0ea5e9':'#e2e8f0',
+            color:input.trim()?'#fff':'#9ca3af',
+            display:'flex',alignItems:'center',justifyContent:'center',fontSize:18,
+            transition:'background 0.2s'
+          }}>➤</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Lista de conversaciones
+  const totalUnread=convs.reduce((a,c)=>a+c.unread_buyer,0);
+  return(
+    <div className="screen fade-in" style={{background:'#f8fafc',overflowY:'auto'}}>
+      <StatusBar/>
+      {/* Header */}
+      <div style={{background:'#fff',padding:'16px 20px 12px',borderBottom:'1px solid #f1f5f9'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{fontWeight:800,fontSize:20,color:'#111827'}}>Mensajes</div>
+          {totalUnread>0&&<div style={{background:'#0ea5e9',color:'#fff',fontSize:11,fontWeight:700,padding:'2px 10px',borderRadius:20}}>{totalUnread} nuevos</div>}
+        </div>
+        <div style={{fontSize:12,color:'#9ca3af',marginTop:2}}>Chats con tus distribuidores</div>
+      </div>
+
+      {/* Lista */}
+      <div style={{padding:'8px 0'}}>
+        {convs.length===0?(
+          <div style={{textAlign:'center',padding:'60px 20px'}}>
+            <div style={{fontSize:60,marginBottom:12}}>💬</div>
+            <div style={{fontWeight:700,fontSize:16,color:'#374151',marginBottom:6}}>Sin conversaciones</div>
+            <div style={{fontSize:13,color:'#9ca3af'}}>Escríbele a un distribuidor desde cualquier producto</div>
+          </div>
+        ):convs.map(c=>{
+          const unread=c.unread_buyer;
+          return(
+            <div key={c.id} onClick={()=>setActive(c)} style={{background:'#fff',borderBottom:'1px solid #f1f5f9',padding:'14px 18px',display:'flex',alignItems:'center',gap:14,cursor:'pointer',transition:'background 0.15s'}}>
+              <div style={{width:46,height:46,borderRadius:'50%',background:'linear-gradient(135deg,#0ea5e9,#6366f1)',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:800,fontSize:18,flexShrink:0}}>
+                {c.company_name?.charAt(0)}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:2}}>
+                  <div style={{fontWeight:unread>0?700:600,fontSize:14,color:'#111827',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{c.company_name}</div>
+                  <div style={{fontSize:11,color:'#9ca3af',flexShrink:0,marginLeft:8}}>{fmtDate(c.last_at)}</div>
+                </div>
+                {c.product_name&&<div style={{fontSize:11,color:'#0ea5e9',marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>📦 {c.product_name}</div>}
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <div style={{fontSize:12,color:unread>0?'#374151':'#9ca3af',fontWeight:unread>0?600:400,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1}}>{c.last_message}</div>
+                  {unread>0&&<div style={{width:20,height:20,borderRadius:'50%',background:'#0ea5e9',color:'#fff',fontSize:11,fontWeight:700,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginLeft:8}}>{unread}</div>}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+/* ═══════════════════════════════════
    BOTTOM NAV
 ═══════════════════════════════════ */
 const BottomNav=({role,tab,setTab,cartCount})=>{
@@ -1134,7 +1325,7 @@ const BottomNav=({role,tab,setTab,cartCount})=>{
     {id:'home',    icon:'🏠', label:'Inicio'},
     {id:'explorar',icon:'🛍️',label:'Explorar'},
     {id:'cart',    icon:'🛒', label:'Carrito', badge:cartCount},
-    {id:'pedidos', icon:'📋', label:'Pedidos'},
+    {id:'chat',    icon:'💬', label:'Mensajes'},
     {id:'perfil',  icon:'👤', label:'Perfil'},
   ];
   const distTabs=[
@@ -1193,6 +1384,7 @@ const App=()=>{
         case 'home':    return <HomeScreen cart={cart} setCart={setCart} goStore={s=>setActiveStore(s)} goProduct={p=>setActiveProduct(p)}/>;
         case 'explorar':return <ExplorarScreen cart={cart} setCart={setCart} goStore={s=>setActiveStore(s)} goProduct={p=>setActiveProduct(p)}/>;
         case 'cart':    return <CarritoScreen cart={cart} setCart={setCart} onCheckout={handleCheckout}/>;
+        case 'chat':    return <ChatMovilScreen/>;
         case 'pedidos': return <PedidosScreen/>;
         case 'perfil':  return <PerfilBuyerScreen/>;
         default:        return <HomeScreen cart={cart} setCart={setCart} goStore={s=>setActiveStore(s)} goProduct={p=>setActiveProduct(p)}/>;
