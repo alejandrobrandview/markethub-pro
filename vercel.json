@@ -1,14 +1,10 @@
 {
   "version": 2,
+  "buildCommand": "",
   "outputDirectory": ".",
+  "installCommand": "echo skip",
   "routes": [
-    {
-      "src": "/app-movil",
-      "dest": "/app-movil.html"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
-    }
+    { "src": "/app-movil", "dest": "/app-movil.html" },
+    { "src": "/", "dest": "/index.html" }
   ]
 }
