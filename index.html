@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MarketHub Pro — Marketplace B2B</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+    .pulse { animation: pulse 2s infinite; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    /* ── MOCK DATA ── */
+    const PRODUCTS = [
+      { id:1, name:'Arroz Extra Premium 5kg', sku:'ARR-001', cat:'Granos', price:89, retail:120, stock:1200, minOrder:10, unit:'costal', dist:'Grupo Alianza MX', distId:'d1', emoji:'🌾', featured:true, disc:26, rating:4.8, reviews:142 },
+      { id:2, name:'Aceite Vegetal 1L', sku:'ACE-002', cat:'Aceites', price:28, retail:42, stock:800, minOrder:24, unit:'botella', dist:'Grupo Alianza MX', distId:'d1', emoji:'🫙', featured:true, disc:33, rating:4.6, reviews:98 },
+      { id:3, name:'Frijol Negro 1kg', sku:'FRJ-003', cat:'Granos', price:32, retail:52, stock:2000, minOrder:20, unit:'bolsa', dist:'Distribuidora del Norte', distId:'d2', emoji:'🫘', featured:false, disc:38, rating:4.9, reviews:215 },
+      { id:4, name:'Azúcar Estándar 50kg', sku:'AZU-004', cat:'Endulzantes', price:420, retail:560, stock:300, minOrder:5, unit:'costal', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍬', featured:false, disc:25, rating:4.5, reviews:67 },
+      { id:5, name:'Harina de Trigo 25kg', sku:'HAR-005', cat:'Harinas', price:195, retail:265, stock:600, minOrder:4, unit:'saco', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🥣', featured:true, disc:26, rating:4.7, reviews:88 },
+      { id:6, name:'Sal de Mesa 1kg', sku:'SAL-006', cat:'Condimentos', price:8, retail:14, stock:5000, minOrder:48, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🧂', featured:false, disc:43, rating:4.4, reviews:203 },
+      { id:7, name:'Leche Entera UHT 1L', sku:'LEC-007', cat:'Lácteos', price:19, retail:28, stock:3000, minOrder:24, unit:'litro', dist:'Grupo Alianza MX', distId:'d1', emoji:'🥛', featured:true, disc:32, rating:4.7, reviews:176 },
+      { id:8, name:'Tomate Enlatado 800g', sku:'TOM-008', cat:'Conservas', price:22, retail:35, stock:1500, minOrder:12, unit:'lata', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍅', featured:false, disc:37, rating:4.6, reviews:94 },
+      { id:9, name:'Avena Premium 1kg', sku:'AVE-009', cat:'Cereales', price:35, retail:55, stock:900, minOrder:12, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🌿', featured:false, disc:36, rating:4.8, reviews:112 },
+      { id:10, name:'Mayonesa Industrial 4kg', sku:'MAY-010', cat:'Condimentos', price:95, retail:145, stock:400, minOrder:6, unit:'cubeta', dist:'Grupo Alianza MX', distId:'d1', emoji:'🥣', featured:true, disc:34, rating:4.5, reviews:78 },
+      { id:11, name:'Pasta Spaghetti 5kg', sku:'PAS-011', cat:'Pastas', price:58, retail:85, stock:700, minOrder:10, unit:'paquete', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍝', featured:false, disc:32, rating:4.7, reviews:134 },
+      { id:12, name:'Café Molido 1kg', sku:'CAF-012', cat:'Bebidas', price:145, retail:210, stock:250, minOrder:6, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'☕', featured:true, disc:31, rating:4.9, reviews:256 },
+    ];
+
+    const ORDERS = [
+      { id:'ORD-001', buyer:'Abarrotes La Conchita', date:'2024-04-15', status:'entregado', total:2692, comm:67.3 },
+      { id:'ORD-002', buyer:'Supermercado Familiar', date:'2024-04-18', status:'en_camino', total:1452, comm:36.3 },
+      { id:'ORD-003', buyer:'Restaurante El Buen Sabor', date:'2024-04-20', status:'pendiente', total:1668, comm:41.7 },
+      { id:'ORD-004', buyer:'Tienda Don Pepe', date:'2024-04-22', status:'confirmado', total:2048, comm:51.2 },
+      { id:'ORD-005', buyer:'Cocina Central Norte', date:'2024-04-24', status:'pendiente', total:2580, comm:64.5 },
+    ];
+
+    const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun'];
+    const SALES  = [48200,52100,61800,58400,72300,68900];
+    const ORDERS_CNT = [32,38,45,41,54,49];
+    const SAVINGS_DATA = [4200,5100,6800,5400,7200,6100];
+
+    /* ── HELPERS ── */
+    const $$ = (n) => '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const pct = (n) => n.toFixed(1)+'%';
+
+    const STATUS = {
+      pendiente:  { label:'Pendiente',  cls:'bg-amber-100 text-amber-700' },
+      confirmado: { label:'Confirmado', cls:'bg-sky-100 text-sky-700' },
+      en_camino:  { label:'En camino',  cls:'bg-violet-100 text-violet-700' },
+      entregado:  { label:'Entregado',  cls:'bg-emerald-100 text-emerald-700' },
+      cancelado:  { label:'Cancelado',  cls:'bg-red-100 text-red-600' },
+    };
+
+    /* ── UI ATOMS ── */
+    const Btn = ({ children, v='primary', sz='md', onClick, disabled, full, cls }) => {
+      const base = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 border-0 outline-none select-none';
+      const sizes = { sm:'px-3 py-1.5 text-xs gap-1', md:'px-4 py-2.5 text-sm gap-2', lg:'px-6 py-3 text-base gap-2' };
+      const vars = {
+        primary:'bg-sky-500 hover:bg-sky-600 text-white shadow-sm active:scale-95',
+        green:'bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm active:scale-95',
+        amber:'bg-amber-500 hover:bg-amber-600 text-white shadow-sm active:scale-95',
+        purple:'bg-violet-500 hover:bg-violet-600 text-white shadow-sm active:scale-95',
+        red:'bg-red-500 hover:bg-red-600 text-white shadow-sm active:scale-95',
+        outline:'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 active:scale-95',
+        ghost:'bg-transparent text-slate-500 hover:bg-slate-100 active:scale-95',
+      };
+      return (
+        <button onClick={onClick} disabled={disabled}
+          className={`${base} ${sizes[sz]} ${vars[v]} ${full?'w-full':''} ${disabled?'opacity-40 cursor-not-allowed':''} ${cls||''}`}>
+          {children}
+        </button>
+      );
+    };
+
+    const Badge = ({ label, cls }) => (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${cls}`}>{label}</span>
+    );
+
+    const Card = ({ children, className, onClick }) => (
+      <div onClick={onClick}
+        className={`bg-white rounded-2xl border border-slate-200 shadow-sm ${onClick?'cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200':''} ${className||''}`}>
+        {children}
+      </div>
+    );
+
+    const KPI = ({ icon, label, value, sub, color }) => {
+      const colors = {
+        blue:'bg-sky-50 text-sky-600', green:'bg-emerald-50 text-emerald-600',
+        amber:'bg-amber-50 text-amber-600', purple:'bg-violet-50 text-violet-600', red:'bg-red-50 text-red-600',
+      };
+      return (
+        <Card className="p-5">
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl mb-3 ${colors[color||'blue']}`}>{icon}</div>
+          <div className="text-2xl font-bold text-slate-800">{value}</div>
+          <div className="text-sm text-slate-500 mt-0.5">{label}</div>
+          {sub && <div className="text-xs text-slate-400 mt-1">{sub}</div>}
+        </Card>
+      );
+    };
+
+    const Modal = ({ open, onClose, title, children }) => {
+      if (!open) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto fade-in" onClick={e=>e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-800">{title}</h2>
+              <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:bg-slate-100 text-xl leading-none">&times;</button>
+            </div>
+            <div className="p-6">{children}</div>
+          </div>
+        </div>
+      );
+    };
+
+    const Field = ({ label, type='text', placeholder, value, onChange, icon }) => (
+      <div>
+        {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
+        <div className="relative">
+          {icon && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base">{icon}</span>}
+          <input type={type} placeholder={placeholder} value={value||''} onChange={e=>onChange&&onChange(e.target.value)}
+            className={`w-full border border-slate-200 rounded-xl py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-transparent transition ${icon?'pl-9 pr-3':'px-3'}`} />
+        </div>
+      </div>
+    );
+
+    const Sel = ({ label, value, onChange, opts }) => (
+      <div>
+        {label && <label className="block text-sm font-medium text-slate-700 mb-1.5">{label}</label>}
+        <select value={value} onChange={e=>onChange(e.target.value)}
+          className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400 transition">
+          {opts.map(o=><option key={o.v} value={o.v}>{o.l}</option>)}
+        </select>
+      </div>
+    );
+
+    /* ── CHART COMPONENTS (Chart.js) ── */
+    // La altura DEBE estar en el div contenedor con position:relative,
+    // NO en el canvas — Chart.js sobreescribe los atributos del canvas.
+    const useChart = (type, data, options) => {
+      const canvasRef = useRef();
+      const instanceRef = useRef();
+      useEffect(() => {
+        if (!canvasRef.current) return;
+        // destruir instancia anterior si existe
+        if (instanceRef.current) { instanceRef.current.destroy(); instanceRef.current = null; }
+        instanceRef.current = new Chart(canvasRef.current, { type, data, options });
+        return () => { if (instanceRef.current) { instanceRef.current.destroy(); instanceRef.current = null; } };
+      }, []); // solo al montar
+      return canvasRef;
+    };
+
+    const BarChart = ({ labels, datasets, height=200 }) => {
+      const ref = useChart('bar',
+        { labels, datasets: datasets.map(d=>({ ...d, borderRadius:4, borderSkipped:false })) },
+        {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ boxWidth:12, font:{size:11}, color:'#64748b' } } },
+          scales:{
+            x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{size:11}} },
+            y:{ grid:{color:'#f1f5f9'}, border:{display:false}, ticks:{color:'#94a3b8',font:{size:11}, callback:v=>`$${(v/1000).toFixed(0)}k`} },
+          }
+        }
+      );
+      // El div padre con height explícito es lo que Chart.js usa para dimensionarse
+      return <div style={{ position:'relative', width:'100%', height:`${height}px` }}><canvas ref={ref} /></div>;
+    };
+
+    const LineChart = ({ labels, datasets, height=200 }) => {
+      const ref = useChart('line',
+        { labels, datasets: datasets.map(d=>({ ...d, tension:0.4, pointRadius:4, fill:true })) },
+        {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{ legend:{ labels:{ boxWidth:12, font:{size:11}, color:'#64748b' } } },
+          scales:{
+            x:{ grid:{display:false}, ticks:{color:'#94a3b8',font:{size:11}} },
+            y:{ grid:{color:'#f1f5f9'}, border:{display:false}, ticks:{color:'#94a3b8',font:{size:11}, callback:v=>`$${(v/1000).toFixed(0)}k`} },
+          }
+        }
+      );
+      return <div style={{ position:'relative', width:'100%', height:`${height}px` }}><canvas ref={ref} /></div>;
+    };
+
+    const DonutChart = ({ data, labels, colors, height=200 }) => {
+      const ref = useChart('doughnut',
+        { labels, datasets:[{ data, backgroundColor:colors, borderWidth:2, borderColor:'#fff' }] },
+        {
+          responsive:true, maintainAspectRatio:false, cutout:'65%',
+          plugins:{ legend:{ position:'right', labels:{ boxWidth:12, font:{size:11}, color:'#64748b' } } }
+        }
+      );
+      return <div style={{ position:'relative', width:'100%', height:`${height}px` }}><canvas ref={ref} /></div>;
+    };
+
+    /* ── STATUS BADGE ── */
+    const SBadge = ({ s }) => {
+      const info = STATUS[s] || { label:s, cls:'bg-slate-100 text-slate-600' };
+      return <Badge label={info.label} cls={info.cls} />;
+    };
+
+    /* ── AVATAR ── */
+    const Av = ({ name, size=36 }) => {
+      const bg = ['bg-sky-500','bg-emerald-500','bg-violet-500','bg-amber-500','bg-rose-500'];
+      const i = name.charCodeAt(0) % bg.length;
+      const init = name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      return (
+        <div className={`${bg[i]} text-white rounded-full flex items-center justify-center font-bold flex-shrink-0`}
+          style={{ width:size, height:size, fontSize:size*0.38 }}>{init}</div>
+      );
+    };
+
+    /* ═══════════════════════════════════════════
+       LANDING PAGE
+    ═══════════════════════════════════════════ */
+    const Landing = ({ go }) => {
+      const [modal, setModal] = useState(null);
+      return (
+        <div className="min-h-screen" style={{background:'linear-gradient(135deg,#0f172a 0%,#1e3a5f 55%,#0e4f6e 100%)'}}>
+          {/* NAV */}
+          <nav className="max-w-7xl mx-auto flex items-center justify-between px-8 py-5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-sky-500 flex items-center justify-center text-xl">🏪</div>
+              <span className="text-white font-bold text-xl">MarketHub <span className="text-sky-400">Pro</span></span>
+            </div>
+            <div className="flex items-center gap-3">
+              <Btn v="ghost" sz="md" onClick={() => go('buyer')} cls="!text-slate-300 hover:!text-white">Iniciar sesión</Btn>
+              <Btn v="primary" sz="md" onClick={() => setModal('reg')}>Registrarse gratis</Btn>
+            </div>
+          </nav>
+
+          {/* HERO */}
+          <div className="max-w-7xl mx-auto px-8 py-16 text-center">
+            <div className="inline-flex items-center gap-2 text-sky-300 text-xs font-semibold px-4 py-2 rounded-full mb-6 border border-sky-700/50 bg-sky-900/40">
+              ✨ Plataforma #1 B2B de abarrotes y alimentos en México
+            </div>
+            <h1 className="text-5xl font-extrabold text-white leading-tight mb-5 max-w-3xl mx-auto">
+              Conecta distribuidores con{' '}
+              <span className="text-transparent bg-clip-text" style={{backgroundImage:'linear-gradient(90deg,#38bdf8,#34d399)'}}>
+                minoristas y mayoristas
+              </span>
+            </h1>
+            <p className="text-slate-300 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+              Publica tu catálogo, gestiona inventario y ofrece precios especiales. Los compradores ahorran hasta un{' '}
+              <strong className="text-emerald-400">40%</strong> vs precio de mercado.
+            </p>
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              <Btn v="primary" sz="lg" onClick={() => setModal('dist')}>Soy Distribuidor → Vender</Btn>
+              <Btn sz="lg" onClick={() => go('buyer')}
+                cls="!bg-white/10 !text-white border border-white/20 hover:!bg-white/20 rounded-xl px-6 py-3 text-base font-semibold transition">
+                Soy Comprador → Ver ofertas
+              </Btn>
+            </div>
+
+            {/* STATS */}
+            <div className="grid grid-cols-3 gap-8 mt-20 max-w-xl mx-auto">
+              {[['🏪','1,200+','Distribuidores activos'],['🛒','15,000+','Compradores registrados'],['💰','40%','Ahorro promedio']].map(([icon,val,lab])=>(
+                <div key={lab}>
+                  <div className="text-3xl mb-2">{icon}</div>
+                  <div className="text-3xl font-extrabold text-white">{val}</div>
+                  <div className="text-slate-400 text-sm mt-1">{lab}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* FEATURES */}
+          <div className="max-w-7xl mx-auto px-8 pb-12">
+            <div className="grid grid-cols-3 gap-5">
+              {[
+                {icon:'📦',title:'Catálogo inteligente',desc:'Publica productos con precios diferenciados para minoristas y mayoristas. Stock en tiempo real.'},
+                {icon:'💰',title:'Ahorros tangibles',desc:'Cada comprador ve exactamente cuánto ahorra vs precio de mercado. Transparencia que genera confianza.'},
+                {icon:'📊',title:'Analytics poderoso',desc:'Ventas, pedidos, comisiones y tendencias desde un dashboard visual e intuitivo.'},
+              ].map(f=>(
+                <div key={f.title} className="rounded-2xl p-6 bg-white/5 border border-white/10">
+                  <div className="text-4xl mb-4">{f.icon}</div>
+                  <h3 className="text-white font-bold text-lg mb-2">{f.title}</h3>
+                  <p className="text-slate-400 text-sm leading-relaxed">{f.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* PRICING */}
+          <div className="max-w-7xl mx-auto px-8 pb-16 text-center">
+            <h2 className="text-3xl font-bold text-white mb-2">Planes para distribuidores</h2>
+            <p className="text-slate-400 mb-10">Empieza gratis. Escala cuando quieras.</p>
+            <div className="grid grid-cols-3 gap-5 max-w-4xl mx-auto">
+              {[
+                {name:'Básico',price:0,features:['10 productos','Pedidos ilimitados','Soporte por email','Analytics básico'],popular:false},
+                {name:'Pro',price:299,features:['Productos ilimitados','Analytics avanzado','Promociones y destacados','Soporte 24/7'],popular:true},
+                {name:'Enterprise',price:799,features:['Todo en Pro','Gerente dedicado','Integración ERP','Comisión al 1.5%'],popular:false},
+              ].map(p=>(
+                <div key={p.name} className={`rounded-2xl p-6 text-left relative ${p.popular?'ring-2 ring-sky-400 bg-sky-500/15':'bg-white/5'} border border-white/10`}>
+                  {p.popular && <div className="absolute -top-3 left-6 bg-sky-400 text-sky-900 text-xs font-bold px-3 py-1 rounded-full">MÁS POPULAR</div>}
+                  <div className="text-white font-bold text-lg mb-1">{p.name}</div>
+                  <div className="mb-4"><span className="text-3xl font-extrabold text-white">{p.price===0?'Free':$$( p.price)}</span>{p.price>0&&<span className="text-slate-400 text-sm">/mo</span>}</div>
+                  <ul className="space-y-2 mb-6">
+                    {p.features.map(f=><li key={f} className="text-slate-300 text-sm flex items-start gap-2"><span className="text-emerald-400">✓</span>{f}</li>)}
+                  </ul>
+                  <Btn v={p.popular?'primary':'outline'} full onClick={()=>setModal('dist')}
+                    cls={!p.popular?'!bg-white/10 !text-white !border-white/20 hover:!bg-white/20':''}>
+                    Empezar {p.name}
+                  </Btn>
+                </div>
+              ))}
+            </div>
+            <p className="text-slate-500 text-sm mt-6">+ 2.5% de comisión por cada venta en la plataforma</p>
+          </div>
+
+          <div className="text-center py-8 text-slate-600 text-sm border-t border-white/5">
+            © 2024 MarketHub Pro · Hecho en México 🇲🇽
+          </div>
+
+          {/* MODALS */}
+          <Modal open={modal==='reg'} onClose={()=>setModal(null)} title="¿Cómo quieres usar MarketHub?">
+            <div className="grid grid-cols-2 gap-4">
+              {[{r:'dist',icon:'🏭',t:'Soy Distribuidor',d:'Quiero publicar y vender mis productos a minoristas y mayoristas.'},
+                {r:'buyer',icon:'🛒',t:'Soy Comprador',d:'Quiero encontrar productos a precios especiales para mi negocio.'}].map(x=>(
+                <button key={x.r} onClick={()=>{setModal(null);go(x.r==='dist'?'distributor':'buyer');}}
+                  className="p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-400 hover:bg-sky-50 transition-all text-left group">
+                  <div className="text-4xl mb-3">{x.icon}</div>
+                  <div className="font-bold text-slate-800 group-hover:text-sky-700 mb-1">{x.t}</div>
+                  <div className="text-sm text-slate-500">{x.d}</div>
+                </button>
+              ))}
+            </div>
+          </Modal>
+
+          <Modal open={modal==='dist'} onClose={()=>setModal(null)} title="Crear cuenta de Distribuidor">
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Nombre" placeholder="Juan" />
+                <Field label="Apellido" placeholder="García" />
+              </div>
+              <Field label="Email empresarial" icon="✉️" placeholder="ventas@empresa.com" />
+              <Field label="Empresa" icon="🏭" placeholder="Distribuidora SA de CV" />
+              <Field label="Contraseña" type="password" icon="🔒" placeholder="••••••••" />
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                <span className="text-2xl">🎁</span>
+                <div>
+                  <div className="text-sm font-semibold text-emerald-800">30 days free on Pro Plan</div>
+                  <div className="text-xs text-emerald-600">No card required. Cancel anytime.</div>
+                </div>
+              </div>
+              <Btn v="primary" full sz="lg" onClick={()=>{setModal(null);go('distributor');}}>Crear cuenta gratis →</Btn>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════ */
+    const Sidebar = ({ role, page, setPage, user, onLogout, cartCount }) => {
+      const distNav = [
+        {id:'dash',icon:'📊',label:'Dashboard'},
+        {id:'products',icon:'📦',label:'Mis Productos'},
+        {id:'inventory',icon:'🗃️',label:'Inventario'},
+        {id:'orders',icon:'📋',label:'Pedidos'},
+        {id:'promos',icon:'🏷️',label:'Promociones'},
+        {id:'analytics',icon:'📈',label:'Analytics'},
+        {id:'plans',icon:'💎',label:'Mi Plan'},
+      ];
+      const buyerNav = [
+        {id:'catalog',icon:'🛍️',label:'Catálogo'},
+        {id:'cart',icon:'🛒',label:'Carrito',badge:cartCount},
+        {id:'myorders',icon:'📋',label:'Mis Pedidos'},
+        {id:'savings',icon:'💰',label:'Mis Ahorros'},
+      ];
+      const adminNav = [
+        {id:'aoverview',icon:'🏠',label:'Overview'},
+        {id:'acomm',icon:'💸',label:'Comisiones'},
+        {id:'asubs',icon:'📅',label:'Suscripciones'},
+        {id:'ausers',icon:'👥',label:'Usuarios'},
+        {id:'afeat',icon:'⭐',label:'Destacados'},
+      ];
+      const nav = role==='distributor'?distNav:role==='admin'?adminNav:buyerNav;
+      const roleLabel = role==='distributor'?'Distribuidor':role==='admin'?'Administración':'Comprador';
+      return (
+        <aside className="w-60 flex-shrink-0 bg-white border-r border-slate-100 flex flex-col" style={{position:'sticky',top:0,height:'100vh'}}>
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center text-lg">🏪</div>
+            <span className="font-bold text-slate-800">MarketHub <span className="text-sky-500">Pro</span></span>
+          </div>
+          <nav className="flex-1 px-3 py-3 overflow-y-auto">
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-3 mb-2">{roleLabel}</div>
+            <ul className="space-y-0.5">
+              {nav.map(item=>(
+                <li key={item.id}>
+                  <button onClick={()=>setPage(item.id)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${page===item.id?'bg-sky-50 text-sky-700':'text-slate-600 hover:bg-slate-50'}`}>
+                    <span className="text-base">{item.icon}</span>
+                    <span className="flex-1 text-left">{item.label}</span>
+                    {item.badge>0 && <span className="w-5 h-5 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center font-bold">{item.badge}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="px-4 py-4 border-t border-slate-100">
+            <div className="flex items-center gap-3 mb-3">
+              <Av name={user.name} size={36} />
+              <div className="min-w-0">
+                <div className="text-sm font-semibold text-slate-800 truncate">{user.name}</div>
+                <div className="text-xs text-slate-400">{roleLabel}</div>
+              </div>
+            </div>
+            <Btn v="ghost" sz="sm" full onClick={onLogout} cls="!justify-start !text-slate-500">← Salir</Btn>
+          </div>
+        </aside>
+      );
+    };
+
+    /* ── TOPBAR ── */
+    const TB = ({ title, sub, action }) => (
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">{title}</h1>
+          {sub && <p className="text-sm text-slate-500 mt-0.5">{sub}</p>}
+        </div>
+        {action}
+      </div>
+    );
+
+    /* ═══════════════════════════════════════════
+       DISTRIBUTOR PAGES
+    ═══════════════════════════════════════════ */
+    const DistDash = ({ setPage }) => (
+      <div className="fade-in">
+        <TB title="Dashboard" sub="Bienvenido, Grupo Alianza MX" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <KPI icon="💰" label="Ventas este mes" value={$$(72300)} sub="+18% vs mes anterior" color="green" />
+          <KPI icon="📋" label="Pedidos activos" value="54" sub="8 pendientes" color="blue" />
+          <KPI icon="📦" label="Productos activos" value="28" sub="3 con stock bajo" color="amber" />
+          <KPI icon="⭐" label="Calificación" value="4.8/5" sub="142 reseñas" color="purple" />
+        </div>
+        <div className="grid grid-cols-3 gap-5 mb-5">
+          <Card className="col-span-2 p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Ventas — últimos 6 meses</h3>
+            <LineChart
+              labels={MONTHS}
+              datasets={[{label:'Ventas',data:SALES,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,0.1)',borderWidth:2,pointBackgroundColor:'#0ea5e9'}]}
+              height={200}
+            />
+          </Card>
+          <Card className="p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Pedidos recientes</h3>
+            <div className="space-y-3">
+              {ORDERS.slice(0,4).map(o=>(
+                <div key={o.id} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-sky-50 rounded-lg flex items-center justify-center text-sm">📋</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs font-semibold text-slate-700 truncate">{o.buyer}</div>
+                    <div className="text-xs text-slate-400">{$$(o.total)}</div>
+                  </div>
+                  <SBadge s={o.status} />
+                </div>
+              ))}
+              <Btn v="ghost" sz="sm" full onClick={()=>setPage('orders')} cls="mt-2">Ver todos →</Btn>
+            </div>
+          </Card>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200">
+            <div className="flex items-center gap-2 mb-1"><span>⚠️</span><span className="font-semibold text-amber-800 text-sm">Stock bajo</span></div>
+            <p className="text-xs text-amber-700 mb-3">Café Molido: 250 uds · Azúcar 50kg: 300 costales</p>
+            <Btn v="amber" sz="sm" onClick={()=>setPage('inventory')}>Ver inventario</Btn>
+          </div>
+          <div className="p-4 rounded-2xl bg-sky-50 border border-sky-200">
+            <div className="flex items-center gap-2 mb-1"><span>📋</span><span className="font-semibold text-sky-800 text-sm">Por confirmar</span></div>
+            <p className="text-xs text-sky-700 mb-3">8 pedidos esperan tu confirmación.</p>
+            <Btn v="primary" sz="sm" onClick={()=>setPage('orders')}>Ver pedidos</Btn>
+          </div>
+          <div className="p-4 rounded-2xl bg-violet-50 border border-violet-200">
+            <div className="flex items-center gap-2 mb-1"><span>💎</span><span className="font-semibold text-violet-800 text-sm">Plan Pro activo</span></div>
+            <p className="text-xs text-violet-700 mb-3">Vence el 30 de mayo. Renueva para continuar.</p>
+            <Btn v="purple" sz="sm" onClick={()=>setPage('plans')}>Gestionar plan</Btn>
+          </div>
+        </div>
+      </div>
+    );
+
+    const DistProducts = () => {
+      const [search, setSearch] = useState('');
+      const [showAdd, setShowAdd] = useState(false);
+      const mine = PRODUCTS.filter(p=>p.distId==='d1');
+      const filtered = mine.filter(p=>p.name.toLowerCase().includes(search.toLowerCase()));
+      return (
+        <div className="fade-in">
+          <TB title="Mis Productos" sub={`${mine.length} productos publicados`}
+            action={<Btn v="primary" onClick={()=>setShowAdd(true)}>+ Agregar producto</Btn>} />
+          <Card className="mb-4 p-4">
+            <Field icon="🔍" placeholder="Buscar producto, SKU..." value={search} onChange={setSearch} />
+          </Card>
+          <Card>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100">
+                    {['Producto','SKU','Categoría','Precio dist.','P. Retail','Stock','Acciones'].map(h=>(
+                      <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(p=>(
+                    <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl">{p.emoji}</span>
+                          <div>
+                            <div className="font-medium text-slate-800">{p.name}</div>
+                            {p.featured && <Badge label="⭐ Destacado" cls="bg-amber-100 text-amber-700" />}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-500">{p.sku}</td>
+                      <td className="px-4 py-3"><Badge label={p.cat} cls="bg-sky-100 text-sky-700" /></td>
+                      <td className="px-4 py-3 font-semibold text-sky-600">{$$(p.price)}</td>
+                      <td className="px-4 py-3 text-slate-400 line-through">{$$(p.retail)}</td>
+                      <td className="px-4 py-3"><span className={`font-semibold ${p.stock<300?'text-red-500':'text-emerald-600'}`}>{p.stock.toLocaleString()}</span></td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2"><Btn v="outline" sz="sm">✏️ Editar</Btn></div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+          <Modal open={showAdd} onClose={()=>setShowAdd(false)} title="Agregar Producto">
+            <div className="space-y-4">
+              <Field label="Nombre del producto" placeholder="Ej: Arroz Extra Premium 5kg" />
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="SKU" placeholder="ARR-001" />
+                <Sel label="Categoría" value="Granos" onChange={()=>{}} opts={['Granos','Aceites','Lácteos','Harinas','Condimentos','Conservas','Bebidas','Cereales','Pastas'].map(x=>({v:x,l:x}))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Precio distribuidor" type="number" placeholder="89.00" icon="💲" />
+                <Field label="Precio retail referencia" type="number" placeholder="120.00" icon="🏷️" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="Stock inicial" type="number" placeholder="1000" />
+                <Field label="Pedido mínimo" type="number" placeholder="10" />
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                <input type="checkbox" className="w-4 h-4 accent-amber-500" />
+                <span className="text-sm text-amber-800 font-medium">⭐ Feature this product (+$150/mo)</span>
+              </div>
+              <Btn v="primary" full sz="lg">Publicar producto</Btn>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    const Inventory = () => {
+      const mine = PRODUCTS.filter(p=>p.distId==='d1');
+      return (
+        <div className="fade-in">
+          <TB title="Control de Inventario" sub="Stock en tiempo real" />
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            <KPI icon="📦" label="Total SKUs" value={mine.length} color="blue" />
+            <KPI icon="✅" label="En stock" value={mine.filter(p=>p.stock>300).length} color="green" />
+            <KPI icon="⚠️" label="Stock bajo" value={mine.filter(p=>p.stock<=300).length} color="amber" />
+            <KPI icon="🔢" label="Unidades totales" value={mine.reduce((a,p)=>a+p.stock,0).toLocaleString()} color="purple" />
+          </div>
+          <Card>
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  {['Producto','SKU','Stock','Mín. Pedido','Nivel','Estado','Acción'].map(h=>(
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {mine.map(p=>{
+                  const cap = Math.min(100,(p.stock/3000)*100);
+                  const ok = p.stock>500, warn = p.stock>200;
+                  const color = ok?'#10b981':warn?'#f59e0b':'#ef4444';
+                  const label = ok?'Disponible':warn?'Stock bajo':'Crítico';
+                  const badgeCls = ok?'bg-emerald-100 text-emerald-700':warn?'bg-amber-100 text-amber-700':'bg-red-100 text-red-600';
+                  return (
+                    <tr key={p.id} className="border-b border-slate-50 hover:bg-slate-50">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3"><span className="text-2xl">{p.emoji}</span><span className="font-medium text-slate-800">{p.name}</span></div>
+                      </td>
+                      <td className="px-4 py-3 font-mono text-xs text-slate-500">{p.sku}</td>
+                      <td className="px-4 py-3 font-bold text-slate-800">{p.stock.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-slate-500">{p.minOrder}</td>
+                      <td className="px-4 py-3 w-36">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-slate-100 rounded-full h-2">
+                            <div className="h-2 rounded-full" style={{width:`${cap}%`,background:color,transition:'width 0.3s'}} />
+                          </div>
+                          <span className="text-xs text-slate-500 w-8">{cap.toFixed(0)}%</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><Badge label={label} cls={badgeCls} /></td>
+                      <td className="px-4 py-3"><Btn v={ok?'outline':'amber'} sz="sm">+ Reabastecer</Btn></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      );
+    };
+
+    const DistOrders = () => {
+      const [filter, setFilter] = useState('todos');
+      const list = filter==='todos'?ORDERS:ORDERS.filter(o=>o.status===filter);
+      return (
+        <div className="fade-in">
+          <TB title="Pedidos" sub="Gestiona los pedidos de tus compradores" />
+          <div className="flex gap-2 mb-5 flex-wrap">
+            {['todos','pendiente','confirmado','en_camino','entregado'].map(s=>(
+              <button key={s} onClick={()=>setFilter(s)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${filter===s?'bg-sky-500 text-white':'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                {s==='todos'?'Todos':STATUS[s]?.label}
+              </button>
+            ))}
+          </div>
+          <div className="space-y-3">
+            {list.map(o=>(
+              <Card key={o.id} className="p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold font-mono text-slate-800">{o.id}</span>
+                    <SBadge s={o.status} />
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-slate-800">{$$(o.total)}</div>
+                    <div className="text-xs text-slate-400">Comisión: <span className="text-red-500 font-semibold">{$$(o.comm)}</span></div>
+                  </div>
+                </div>
+                <div className="text-sm text-slate-500 mb-3">{o.buyer} · {o.date}</div>
+                <div className="flex gap-2">
+                  {o.status==='pendiente'&&<><Btn v="green" sz="sm">✓ Confirmar</Btn><Btn v="red" sz="sm">✗ Rechazar</Btn></>}
+                  {o.status==='confirmado'&&<Btn v="primary" sz="sm">🚚 En camino</Btn>}
+                  {o.status==='en_camino'&&<Btn v="green" sz="sm">✓ Entregado</Btn>}
+                  <Btn v="ghost" sz="sm">📄 Detalle</Btn>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    /* ── TIPO_INFO: etiquetas y colores por tipo de promoción ── */
+    const TIPO_INFO = {
+      porcentaje:  { label:'% Descuento',   icon:'🏷️',  cls:'bg-sky-100 text-sky-700' },
+      cantidad:    { label:'$ Descuento',   icon:'💵',  cls:'bg-emerald-100 text-emerald-700' },
+      '2x1':       { label:'2 × 1',         icon:'🎁',  cls:'bg-violet-100 text-violet-700' },
+      envio_gratis:{ label:'Envío gratis',  icon:'🚚',  cls:'bg-amber-100 text-amber-700' },
+      volumen:     { label:'Por volumen',   icon:'📦',  cls:'bg-rose-100 text-rose-700' },
+    };
+
+    const EMPTY_FORM = {
+      title:'', description:'', product_id:'', type:'porcentaje',
+      discount_pct:'', discount_amount:'', min_qty:'1', max_qty:'',
+      expires_at:'', code:''
+    };
+
+    /* ── PROMO FORM (crear / editar) ── */
+    const PromoForm = ({ form, setForm, onSave, onCancel, products, saving }) => {
+      const t = form.type;
+      const genCode = () => {
+        const c = Math.random().toString(36).substring(2,8).toUpperCase();
+        setForm(f=>({...f, code:c}));
+      };
+      return (
+        <div className="space-y-4">
+          <Field label="Nombre de la promoción *" placeholder="Combo Especial de Verano"
+            value={form.title} onChange={v=>setForm(f=>({...f,title:v}))} />
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Descripción (opcional)</label>
+            <textarea rows={2} placeholder="Describe los beneficios de esta promoción..."
+              value={form.description} onChange={e=>setForm(f=>({...f,description:e.target.value}))}
+              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Sel label="Tipo de promoción" value={form.type}
+              onChange={v=>setForm(f=>({...f,type:v}))}
+              opts={[
+                {v:'porcentaje',  l:'🏷️ % Descuento'},
+                {v:'cantidad',    l:'💵 Monto fijo'},
+                {v:'2x1',         l:'🎁 2 × 1'},
+                {v:'envio_gratis',l:'🚚 Envío gratis'},
+                {v:'volumen',     l:'📦 Por volumen'},
+              ]} />
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Producto (opcional)</label>
+              <select value={form.product_id} onChange={e=>setForm(f=>({...f,product_id:e.target.value}))}
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400">
+                <option value="">— Todos mis productos —</option>
+                {products.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Campos según tipo */}
+          {(t==='porcentaje'||t==='volumen') && (
+            <Field label="Porcentaje de descuento (%)" type="number" placeholder="15"
+              value={form.discount_pct} onChange={v=>setForm(f=>({...f,discount_pct:v}))} icon="%" />
+          )}
+          {t==='cantidad' && (
+            <Field label="Monto de descuento ($)" type="number" placeholder="50"
+              value={form.discount_amount} onChange={v=>setForm(f=>({...f,discount_amount:v}))} icon="$" />
+          )}
+          {(t==='2x1'||t==='envio_gratis') && (
+            <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-600 border border-slate-200">
+              {t==='2x1' ? '🎁 El comprador paga una unidad y lleva dos.' : '🚚 El costo de envío queda incluido sin costo adicional.'}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Cantidad mínima" type="number" placeholder="1"
+              value={form.min_qty} onChange={v=>setForm(f=>({...f,min_qty:v}))} />
+            <Field label="Cantidad máxima (opcional)" type="number" placeholder="—"
+              value={form.max_qty} onChange={v=>setForm(f=>({...f,max_qty:v}))} />
+          </div>
+          <Field label="Expira el (opcional)" type="date"
+            value={form.expires_at} onChange={v=>setForm(f=>({...f,expires_at:v}))} />
+
+          {/* Código de cupón */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Código de cupón (opcional)</label>
+            <div className="flex gap-2">
+              <input value={form.code} onChange={e=>setForm(f=>({...f,code:e.target.value.toUpperCase()}))}
+                placeholder="VERANO25" maxLength={12}
+                className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-mono uppercase focus:outline-none focus:ring-2 focus:ring-sky-400" />
+              <Btn v="outline" sz="md" onClick={genCode}>🎲 Generar</Btn>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <Btn v="outline" full onClick={onCancel} disabled={saving}>Cancelar</Btn>
+            <Btn v="primary" full sz="lg" onClick={onSave} disabled={saving}>
+              {saving ? '⏳ Guardando...' : '💾 Guardar promoción'}
+            </Btn>
+          </div>
+        </div>
+      );
+    };
+
+    /* ── PROMO CARD ── */
+    const PromoCard = ({ p, products, onToggle, onEdit, onDelete }) => {
+      const ti = TIPO_INFO[p.type] || { label:p.type, icon:'🏷️', cls:'bg-slate-100 text-slate-600' };
+      const prod = products.find(pr=>pr.id===p.product_id);
+      const isExpired = p.expires_at && new Date(p.expires_at) < new Date();
+      return (
+        <Card className="p-5">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                <h3 className="font-bold text-slate-800 truncate">{p.title}</h3>
+                <Badge label={p.active&&!isExpired?'Activa':'Inactiva'}
+                  cls={p.active&&!isExpired?'bg-emerald-100 text-emerald-700':'bg-slate-100 text-slate-500'} />
+                <Badge label={`${ti.icon} ${ti.label}`} cls={ti.cls} />
+                {isExpired && <Badge label="⏰ Expirada" cls="bg-red-100 text-red-600" />}
+              </div>
+
+              {p.description && <p className="text-xs text-slate-400 mb-2 truncate">{p.description}</p>}
+
+              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                {/* Descuento según tipo */}
+                {(p.type==='porcentaje'||p.type==='volumen') && p.discount_pct>0 &&
+                  <span>💰 <strong className="text-emerald-600">{p.discount_pct}% off</strong></span>}
+                {p.type==='cantidad' && p.discount_amount>0 &&
+                  <span>💵 <strong className="text-emerald-600">-${p.discount_amount}</strong></span>}
+                {p.type==='2x1' &&
+                  <span>🎁 <strong className="text-violet-600">2 por 1</strong></span>}
+                {p.type==='envio_gratis' &&
+                  <span>🚚 <strong className="text-amber-600">Envío gratis</strong></span>}
+
+                <span>📦 Mín. {p.min_qty} unid.</span>
+                {p.max_qty && <span>Máx. {p.max_qty}</span>}
+                {p.code && <span className="font-mono bg-slate-100 px-2 py-0.5 rounded text-xs text-slate-700">🎟️ {p.code}</span>}
+                {p.expires_at && <span>📅 Hasta {new Date(p.expires_at).toLocaleDateString('es-MX')}</span>}
+                {prod && <span>🛒 {prod.name}</span>}
+              </div>
+            </div>
+
+            <div className="flex gap-2 flex-shrink-0">
+              <Btn v={p.active?'amber':'green'} sz="sm" onClick={()=>onToggle(p)}>
+                {p.active?'⏸ Pausar':'▶ Activar'}
+              </Btn>
+              <Btn v="outline" sz="sm" onClick={()=>onEdit(p)}>✏️ Editar</Btn>
+              <Btn v="red" sz="sm" onClick={()=>onDelete(p.id)}>🗑</Btn>
+            </div>
+          </div>
+        </Card>
+      );
+    };
+
+    /* ── PROMOS PRINCIPAL ── */
+    const Promos = () => {
+      const API = window.location.origin;
+
+      const [promos, setPromos] = useState([]);
+      const [products, setProducts] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [saving, setSaving] = useState(false);
+      const [error, setError] = useState(null);
+
+      const [showModal, setShowModal] = useState(false);
+      const [editing, setEditing] = useState(null); // null = nuevo, obj = editar
+      const [form, setForm] = useState(EMPTY_FORM);
+
+      const [filterType, setFilterType] = useState('');
+      const [filterActive, setFilterActive] = useState('');
+
+      const token = localStorage.getItem('mh_token');
+      const headers = { 'Content-Type':'application/json', Authorization:`Bearer ${token}` };
+
+      // Cargar datos
+      const load = async () => {
+        setLoading(true);
+        try {
+          const [pr, pd] = await Promise.all([
+            fetch(`${API}/api/promotions/mine`, { headers }).then(r=>r.json()),
+            fetch(`${API}/api/products/distributor/mine`, { headers }).then(r=>r.json()),
+          ]);
+          setPromos(pr.promotions || []);
+          setProducts(pd.products || []);
+        } catch {
+          // Datos mock si el servidor no está corriendo
+          setPromos([
+            { id:'p1', title:'Combo Granos de Temporada', description:'Descuento especial en granos selectos', type:'porcentaje', discount_pct:15, discount_amount:0, min_qty:10, max_qty:null, expires_at:'2025-12-31', code:'GRANOS15', active:1, product_id:null },
+            { id:'p2', title:'Descuento por Volumen Aceites', description:'Mayor cantidad, mejor precio', type:'volumen', discount_pct:10, discount_amount:0, min_qty:24, max_qty:null, expires_at:null, code:null, active:1, product_id:null },
+            { id:'p3', title:'Oferta Flash Fin de Semana', description:'Solo por tiempo limitado', type:'cantidad', discount_pct:0, discount_amount:50, min_qty:1, max_qty:null, expires_at:'2024-01-01', code:'FLASH50', active:0, product_id:null },
+            { id:'p4', title:'2x1 en Lácteos', description:'Lleva 2, paga 1 en todos los lácteos', type:'2x1', discount_pct:0, discount_amount:0, min_qty:2, max_qty:null, expires_at:'2025-06-30', code:null, active:1, product_id:null },
+            { id:'p5', title:'Envío Gratis Mayoreo', description:'Sin costo de envío en pedidos grandes', type:'envio_gratis', discount_pct:0, discount_amount:0, min_qty:50, max_qty:null, expires_at:null, code:'ENVIOGRATIS', active:1, product_id:null },
+          ]);
+          setProducts(PRODUCTS.map(p=>({id:String(p.id),name:p.name,price:p.price})));
+        } finally { setLoading(false); }
+      };
+
+      useEffect(()=>{ load(); }, []);
+
+      const openNew = () => { setEditing(null); setForm(EMPTY_FORM); setShowModal(true); };
+      const openEdit = (p) => {
+        setEditing(p);
+        setForm({
+          title:p.title||'', description:p.description||'', product_id:p.product_id||'',
+          type:p.type||'porcentaje', discount_pct:p.discount_pct||'', discount_amount:p.discount_amount||'',
+          min_qty:p.min_qty||'1', max_qty:p.max_qty||'', expires_at:p.expires_at?p.expires_at.split('T')[0]:'',
+          code:p.code||''
+        });
+        setShowModal(true);
+      };
+
+      const handleSave = async () => {
+        if (!form.title.trim()) { setError('El nombre de la promoción es requerido'); return; }
+        setSaving(true); setError(null);
+        const body = {
+          title:form.title, description:form.description||null,
+          product_id:form.product_id||null, type:form.type,
+          discount_pct:Number(form.discount_pct)||0, discount_amount:Number(form.discount_amount)||0,
+          min_qty:Number(form.min_qty)||1, max_qty:form.max_qty?Number(form.max_qty):null,
+          expires_at:form.expires_at||null, code:form.code||null
+        };
+        try {
+          const url = editing ? `${API}/api/promotions/${editing.id}` : `${API}/api/promotions`;
+          const method = editing ? 'PUT' : 'POST';
+          const r = await fetch(url, { method, headers, body:JSON.stringify(body) });
+          const data = await r.json();
+          if (!r.ok) throw new Error(data.error||'Error al guardar');
+          await load();
+          setShowModal(false);
+        } catch(e) {
+          // Modo demo: actualizar estado local
+          if (editing) {
+            setPromos(prev=>prev.map(p=>p.id===editing.id?{...p,...body,id:p.id,active:p.active}:p));
+          } else {
+            setPromos(prev=>[{...body,id:'p'+Date.now(),active:1},...prev]);
+          }
+          setShowModal(false);
+        } finally { setSaving(false); }
+      };
+
+      const handleToggle = async (p) => {
+        try {
+          await fetch(`${API}/api/promotions/${p.id}/toggle`, { method:'PATCH', headers });
+        } catch {}
+        setPromos(prev=>prev.map(x=>x.id===p.id?{...x,active:x.active?0:1}:x));
+      };
+
+      const handleDelete = async (id) => {
+        if (!confirm('¿Eliminar esta promoción?')) return;
+        try {
+          await fetch(`${API}/api/promotions/${id}`, { method:'DELETE', headers });
+        } catch {}
+        setPromos(prev=>prev.filter(p=>p.id!==id));
+      };
+
+      const filtered = promos.filter(p=>{
+        if (filterType && p.type!==filterType) return false;
+        if (filterActive==='1' && !p.active) return false;
+        if (filterActive==='0' && p.active) return false;
+        return true;
+      });
+
+      const stats = {
+        total:promos.length,
+        activas:promos.filter(p=>p.active).length,
+        expiradas:promos.filter(p=>p.expires_at&&new Date(p.expires_at)<new Date()).length,
+      };
+
+      return (
+        <div className="fade-in">
+          <TB title="Promociones" sub="Gestiona tus ofertas y descuentos especiales"
+            action={<Btn v="primary" onClick={openNew}>+ Nueva promoción</Btn>} />
+
+          {/* KPIs */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <KPI icon="🏷️" label="Total promociones" value={stats.total} color="blue" />
+            <KPI icon="✅" label="Activas ahora" value={stats.activas} sub={`${stats.total-stats.activas} pausadas`} color="green" />
+            <KPI icon="⏰" label="Expiradas" value={stats.expiradas} sub="Revisar o renovar" color="amber" />
+          </div>
+
+          {/* Filtros */}
+          <div className="flex flex-wrap gap-3 mb-5">
+            <select value={filterType} onChange={e=>setFilterType(e.target.value)}
+              className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400">
+              <option value="">Todos los tipos</option>
+              {Object.entries(TIPO_INFO).map(([k,v])=><option key={k} value={k}>{v.icon} {v.label}</option>)}
+            </select>
+            <select value={filterActive} onChange={e=>setFilterActive(e.target.value)}
+              className="border border-slate-200 rounded-xl px-3 py-2 text-sm bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400">
+              <option value="">Todos los estados</option>
+              <option value="1">✅ Solo activas</option>
+              <option value="0">⏸ Solo pausadas</option>
+            </select>
+          </div>
+
+          {loading && (
+            <div className="flex items-center justify-center py-16 text-slate-400">
+              <span className="pulse text-2xl mr-3">⏳</span> Cargando promociones...
+            </div>
+          )}
+
+          {!loading && filtered.length === 0 && (
+            <Card className="p-12 text-center">
+              <div className="text-5xl mb-4">🏷️</div>
+              <h3 className="font-bold text-slate-700 text-lg mb-2">
+                {promos.length === 0 ? 'Aún no tienes promociones' : 'Sin resultados para este filtro'}
+              </h3>
+              <p className="text-slate-400 text-sm mb-5">
+                {promos.length === 0 ? 'Crea tu primera oferta para atraer más compradores.' : 'Prueba cambiando los filtros.'}
+              </p>
+              {promos.length === 0 && <Btn v="primary" onClick={openNew}>+ Crear primera promoción</Btn>}
+            </Card>
+          )}
+
+          <div className="space-y-4">
+            {filtered.map(p=>(
+              <PromoCard key={p.id} p={p} products={products}
+                onToggle={handleToggle} onEdit={openEdit} onDelete={handleDelete} />
+            ))}
+          </div>
+
+          {/* Modal crear / editar */}
+          <Modal open={showModal} onClose={()=>setShowModal(false)}
+            title={editing ? '✏️ Editar promoción' : '🏷️ Nueva promoción'}>
+            {error && (
+              <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">{error}</div>
+            )}
+            <PromoForm form={form} setForm={setForm} products={products}
+              onSave={handleSave} onCancel={()=>setShowModal(false)} saving={saving} />
+          </Modal>
+        </div>
+      );
+    };
+
+    const Analytics = () => (
+      <div className="fade-in">
+        <TB title="Analytics" sub="Rendimiento de tu negocio" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <KPI icon="💰" label="Ingresos 6 meses" value={$$(361700)} sub="+22% YoY" color="green" />
+          <KPI icon="📋" label="Pedidos totales" value="259" sub="43 avg/mo" color="blue" />
+          <KPI icon="👥" label="Compradores únicos" value="87" sub="+22 nuevos" color="purple" />
+          <KPI icon="⭐" label="Calificación" value="4.8" sub="142 reseñas" color="amber" />
+        </div>
+        <div className="grid grid-cols-2 gap-5 mb-5">
+          <Card className="p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Ventas mensuales</h3>
+            <BarChart
+              labels={MONTHS}
+              datasets={[{label:'Ventas ($)',data:SALES,backgroundColor:'rgba(14,165,233,0.8)'}]}
+              height={200}
+            />
+          </Card>
+          <Card className="p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Pedidos por mes</h3>
+            <BarChart
+              labels={MONTHS}
+              datasets={[{label:'Pedidos',data:ORDERS_CNT,backgroundColor:'rgba(16,185,129,0.8)'}]}
+              height={200}
+            />
+          </Card>
+        </div>
+        <Card className="p-5">
+          <h3 className="font-bold text-slate-800 mb-4">Top productos por ventas</h3>
+          <div className="space-y-3">
+            {PRODUCTS.filter(p=>p.distId==='d1').map((p,i)=>(
+              <div key={p.id} className="flex items-center gap-4">
+                <div className="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">#{i+1}</div>
+                <span className="text-2xl">{p.emoji}</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium text-slate-700">{p.name}</span>
+                    <span className="text-sm font-bold text-slate-800">{$$(p.price*(80+i*12))}</span>
+                  </div>
+                  <div className="bg-slate-100 rounded-full h-2">
+                    <div className="h-2 rounded-full bg-sky-400" style={{width:`${100-i*15}%`}} />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+
+    const Plans = () => (
+      <div className="fade-in">
+        <TB title="Mi Plan" sub="Suscripción y estructura de monetización" />
+        <div className="grid grid-cols-3 gap-5 mb-6">
+          {[
+            {id:'free',name:'Básico',price:0,features:['10 productos','Pedidos ilimitados','Email soporte','Analytics básico'],current:false},
+            {id:'pro',name:'Pro',price:299,features:['Ilimitados','Analytics avanzado','Promociones','Soporte 24/7'],current:true},
+            {id:'ent',name:'Enterprise',price:799,features:['Todo en Pro','Gerente dedicado','ERP integración','Comisión 1.5%'],current:false},
+          ].map(p=>(
+            <Card key={p.id} className={`p-6 relative ${p.current?'ring-2 ring-sky-400':''}`}>
+              {p.current && <div className="absolute -top-3 left-6 bg-sky-500 text-white text-xs font-bold px-3 py-1 rounded-full">PLAN ACTUAL</div>}
+              <div className="font-bold text-slate-800 text-lg mb-1">{p.name}</div>
+              <div className="mb-4"><span className="text-3xl font-extrabold">{p.price===0?'Free':$$(p.price)}</span>{p.price>0&&<span className="text-slate-400 text-sm">/mo</span>}</div>
+              <ul className="space-y-2 mb-6">
+                {p.features.map(f=><li key={f} className="text-sm text-slate-600 flex items-start gap-2"><span className="text-emerald-500">✓</span>{f}</li>)}
+              </ul>
+              <Btn v={p.current?'outline':'primary'} full disabled={p.current}>{p.current?'Plan actual':`Cambiar a ${p.name}`}</Btn>
+            </Card>
+          ))}
+        </div>
+        <Card className="p-5">
+          <h3 className="font-bold text-slate-800 mb-4">Tasas de comisión por plan</h3>
+          <div className="grid grid-cols-3 gap-4">
+            {[['Básico','2.5%','$25 por cada $1,000'],['Pro','2.5%','$25 por cada $1,000'],['Enterprise','1.5%','$15 por cada $1,000']].map(([name,rate,ex])=>(
+              <div key={name} className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                <div className="font-semibold text-slate-700 mb-1">Plan {name}</div>
+                <div className="text-2xl font-bold text-sky-600 mb-1">{rate}</div>
+                <div className="text-xs text-slate-400">{ex} vendidos</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+    );
+
+    /* ═══════════════════════════════════════════
+       BUYER PAGES — Estilo Rappi / PedidosYa
+    ═══════════════════════════════════════════ */
+
+    /* Datos de tiendas (distribuidores) */
+    const STORES = [
+      { id:'d1', name:'Grupo Alianza MX', tag:'Granos · Lácteos · Aceites', rating:4.8, reviews:142, minOrder:500, delivery:'2-4 hrs', featured:true,
+        gradient:'linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%)', emoji:'🏭', badge:'⭐ Destacado', disc:33 },
+      { id:'d2', name:'Distribuidora del Norte', tag:'Granos · Conservas · Pastas', rating:4.9, reviews:215, minOrder:800, delivery:'3-5 hrs', featured:false,
+        gradient:'linear-gradient(135deg,#10b981 0%,#0891b2 100%)', emoji:'🚛', badge:'🔥 Top ventas', disc:38 },
+      { id:'d3', name:'Alimentos Centrales SA', tag:'Harinas · Condimentos · Bebidas', rating:4.7, reviews:88, minOrder:600, delivery:'2-3 hrs', featured:false,
+        gradient:'linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)', emoji:'🏪', badge:'🆕 Nuevo', disc:43 },
+    ];
+
+    const CATS = [
+      { id:'todas',  label:'Todo',         emoji:'🏠' },
+      { id:'Granos', label:'Granos',        emoji:'🌾' },
+      { id:'Aceites',label:'Aceites',       emoji:'🫙' },
+      { id:'Lácteos',label:'Lácteos',       emoji:'🥛' },
+      { id:'Harinas',label:'Harinas',       emoji:'🥣' },
+      { id:'Condimentos',label:'Condimentos',emoji:'🧂'},
+      { id:'Conservas',label:'Conservas',   emoji:'🍅' },
+      { id:'Cereales',label:'Cereales',     emoji:'🌿' },
+      { id:'Pastas',  label:'Pastas',       emoji:'🍝' },
+      { id:'Bebidas', label:'Bebidas',      emoji:'☕' },
+      { id:'Endulzantes',label:'Endulzantes',emoji:'🍬'},
+    ];
+
+    /* ── Tarjeta de producto grande (estilo Rappi) ── */
+    const RappiCard = ({ p, inCart, onAdd }) => (
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 flex flex-col">
+        {/* Imagen / cover del producto */}
+        <div className="relative h-36 flex items-center justify-center" style={{background:'linear-gradient(135deg,#f8fafc,#e2e8f0)'}}>
+          <span className="text-7xl">{p.emoji}</span>
+          {/* Badge descuento */}
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-lg">
+            -{p.disc}%
+          </div>
+          {p.featured && (
+            <div className="absolute top-2 right-2 bg-amber-400 text-amber-900 text-xs font-bold px-2 py-1 rounded-lg">
+              ⭐
+            </div>
+          )}
+        </div>
+        {/* Info */}
+        <div className="p-3 flex-1 flex flex-col">
+          <h3 className="font-semibold text-slate-800 text-sm leading-snug mb-0.5">{p.name}</h3>
+          <p className="text-xs text-slate-400 mb-2">{p.dist}</p>
+          {/* Precios */}
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="text-base font-extrabold text-slate-900">{$$(p.price)}</span>
+            <span className="text-xs text-slate-400 line-through">{$$(p.retail)}</span>
+            <span className="text-xs text-slate-500">/{p.unit}</span>
+          </div>
+          {/* Ahorro prominente */}
+          <div className="mt-auto">
+            <div className="flex items-center gap-1 bg-emerald-50 rounded-lg px-2 py-1.5 mb-2">
+              <span className="text-emerald-600 text-xs font-bold">💰 Ahorras {$$(p.retail - p.price)}/{p.unit}</span>
+            </div>
+            <button onClick={()=>onAdd(p)}
+              className={`w-full py-2 rounded-xl text-sm font-bold transition-all duration-150 active:scale-95 ${inCart ? 'bg-emerald-500 text-white' : 'bg-sky-500 text-white hover:bg-sky-600'}`}>
+              {inCart ? '✓ En carrito' : '+ Agregar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+
+    /* ── Vista detalle de una tienda (distribuidor) ── */
+    const StoreDetail = ({ store, cart, setCart, onBack }) => {
+      const [activeCat, setActiveCat] = useState('todas');
+      const products = PRODUCTS.filter(p => p.distId === store.id);
+      const storeCats = ['todas', ...new Set(products.map(p => p.cat))];
+      const filtered = activeCat === 'todas' ? products : products.filter(p => p.cat === activeCat);
+
+      const addToCart = (p) => setCart(prev => {
+        const ex = prev.find(i => i.id === p.id);
+        return ex ? prev.map(i => i.id === p.id ? {...i, qty: i.qty + p.minOrder} : i) : [...prev, {...p, qty: p.minOrder}];
+      });
+
+      return (
+        <div className="fade-in">
+          {/* Cover de la tienda */}
+          <div className="rounded-2xl overflow-hidden mb-5 relative h-44 flex items-end" style={{background: store.gradient}}>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="text-8xl opacity-30">{store.emoji}</span>
+            </div>
+            <div className="relative z-10 p-5 w-full" style={{background:'linear-gradient(to top, rgba(0,0,0,0.55), transparent)'}}>
+              <button onClick={onBack} className="text-white/80 text-sm mb-2 hover:text-white flex items-center gap-1">← Volver al catálogo</button>
+              <h2 className="text-2xl font-extrabold text-white">{store.name}</h2>
+              <p className="text-white/80 text-sm">{store.tag}</p>
+            </div>
+            <div className="absolute top-4 right-4 bg-white/20 backdrop-blur-sm text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30">
+              {store.badge}
+            </div>
+          </div>
+
+          {/* Info rápida */}
+          <div className="flex items-center gap-4 mb-5 p-4 bg-white rounded-2xl border border-slate-100 shadow-sm">
+            <div className="text-center flex-1 border-r border-slate-100">
+              <div className="text-lg font-bold text-slate-800">⭐ {store.rating}</div>
+              <div className="text-xs text-slate-400">{store.reviews} reseñas</div>
+            </div>
+            <div className="text-center flex-1 border-r border-slate-100">
+              <div className="text-lg font-bold text-slate-800">🕐 {store.delivery}</div>
+              <div className="text-xs text-slate-400">Tiempo entrega</div>
+            </div>
+            <div className="text-center flex-1 border-r border-slate-100">
+              <div className="text-lg font-bold text-slate-800">📦 {filtered.length}</div>
+              <div className="text-xs text-slate-400">Productos</div>
+            </div>
+            <div className="text-center flex-1">
+              <div className="text-lg font-bold text-emerald-600">Hasta -{store.disc}%</div>
+              <div className="text-xs text-slate-400">vs precio mercado</div>
+            </div>
+          </div>
+
+          {/* Filtro de categorías */}
+          <div className="flex gap-2 mb-5 overflow-x-auto pb-1" style={{scrollbarWidth:'none'}}>
+            {storeCats.map(c => (
+              <button key={c} onClick={() => setActiveCat(c)}
+                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${activeCat === c ? 'bg-sky-500 text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-200 hover:border-sky-300'}`}>
+                {c === 'todas' ? '🏠 Todo' : c}
+              </button>
+            ))}
+          </div>
+
+          {/* Grid de productos */}
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filtered.map(p => (
+              <RappiCard key={p.id} p={p} inCart={cart.some(i => i.id === p.id)} onAdd={addToCart} />
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    /* ── Catálogo principal estilo Rappi ── */
+    const Catalog = ({ cart, setCart }) => {
+      const [search, setSearch] = useState('');
+      const [activeCat, setActiveCat] = useState('todas');
+      const [activeStore, setActiveStore] = useState(null);
+
+      /* Si hay una tienda activa, mostrar su detalle */
+      if (activeStore) {
+        return <StoreDetail store={activeStore} cart={cart} setCart={setCart} onBack={() => setActiveStore(null)} />;
+      }
+
+      const addToCart = (p) => setCart(prev => {
+        const ex = prev.find(i => i.id === p.id);
+        return ex ? prev.map(i => i.id === p.id ? {...i, qty: i.qty + p.minOrder} : i) : [...prev, {...p, qty: p.minOrder}];
+      });
+
+      /* Productos filtrados para la sección de búsqueda */
+      const searchResults = search.length > 1
+        ? PRODUCTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.dist.toLowerCase().includes(search.toLowerCase()))
+        : [];
+
+      /* Productos por categoría activa */
+      const catProducts = activeCat === 'todas'
+        ? PRODUCTS.filter(p => p.featured)
+        : PRODUCTS.filter(p => p.cat === activeCat);
+
+      /* Ofertas del día: top 6 por mayor descuento */
+      const deals = [...PRODUCTS].sort((a,b) => b.disc - a.disc).slice(0, 6);
+
+      return (
+        <div className="fade-in -m-8">
+          {/* ── Barra de búsqueda sticky ── */}
+          <div className="sticky top-0 z-30 bg-white border-b border-slate-100 px-6 py-3 shadow-sm">
+            <div className="flex items-center gap-3 max-w-3xl">
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <input value={search} onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar productos o distribuidores..."
+                  className="w-full bg-slate-100 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white transition" />
+                {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">✕</button>}
+              </div>
+            </div>
+          </div>
+
+          <div className="px-6 py-5">
+
+            {/* ── RESULTADOS DE BÚSQUEDA ── */}
+            {search.length > 1 ? (
+              <div>
+                <h2 className="text-lg font-bold text-slate-800 mb-4">
+                  {searchResults.length > 0 ? `${searchResults.length} resultados para "${search}"` : `Sin resultados para "${search}"`}
+                </h2>
+                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {searchResults.map(p => (
+                    <RappiCard key={p.id} p={p} inCart={cart.some(i => i.id === p.id)} onAdd={addToCart} />
+                  ))}
+                </div>
+                {searchResults.length === 0 && (
+                  <div className="text-center py-20">
+                    <div className="text-6xl mb-4">🔍</div>
+                    <p className="text-slate-400">Prueba con otro término</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <>
+                {/* ── HERO BANNER ── */}
+                <div className="rounded-2xl overflow-hidden mb-6 relative" style={{height:200, background:'linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0284c7 100%)'}}>
+                  {/* Fondo decorativo */}
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-20 select-none">🌾</div>
+                  <div className="absolute inset-0 flex flex-col justify-center px-8">
+                    <div className="inline-flex items-center gap-2 bg-white/10 text-sky-300 text-xs font-semibold px-3 py-1 rounded-full mb-3 w-fit border border-white/20">
+                      ⚡ Oferta de la semana
+                    </div>
+                    <h2 className="text-2xl font-extrabold text-white mb-1">Hasta 43% OFF</h2>
+                    <p className="text-sky-200 text-sm mb-4">en toda la línea de condimentos y especias</p>
+                    <button onClick={() => setActiveCat('Condimentos')}
+                      className="bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm px-5 py-2.5 rounded-xl w-fit transition active:scale-95">
+                      Ver oferta →
+                    </button>
+                  </div>
+                </div>
+
+                {/* ── CATEGORÍAS HORIZONTALES ── */}
+                <div className="mb-6">
+                  <div className="flex gap-3 overflow-x-auto pb-2" style={{scrollbarWidth:'none'}}>
+                    {CATS.map(c => (
+                      <button key={c.id} onClick={() => setActiveCat(c.id)}
+                        className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl transition-all duration-150 min-w-16 ${activeCat === c.id ? 'bg-sky-500 text-white shadow-md scale-105' : 'bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:bg-sky-50'}`}>
+                        <span className="text-2xl">{c.emoji}</span>
+                        <span className="text-xs font-semibold">{c.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── DISTRIBUIDORES DESTACADOS ── */}
+                <div className="mb-7">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-extrabold text-slate-800">Distribuidores</h2>
+                    <span className="text-xs text-slate-400">{STORES.length} disponibles</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                    {STORES.map(s => (
+                      <div key={s.id} onClick={() => setActiveStore(s)}
+                        className="rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-pointer bg-white">
+                        {/* Cover */}
+                        <div className="relative h-28 flex items-center justify-center" style={{background: s.gradient}}>
+                          <span className="text-6xl opacity-80">{s.emoji}</span>
+                          <div className="absolute top-2 left-2 bg-white/90 text-slate-700 text-xs font-bold px-2 py-1 rounded-lg shadow-sm">
+                            {s.badge}
+                          </div>
+                          <div className="absolute bottom-0 inset-x-0 h-10" style={{background:'linear-gradient(to top, rgba(0,0,0,0.4), transparent)'}} />
+                        </div>
+                        {/* Info */}
+                        <div className="p-3">
+                          <h3 className="font-bold text-slate-800 text-sm">{s.name}</h3>
+                          <p className="text-xs text-slate-500 mb-2 truncate">{s.tag}</p>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-1 text-xs text-slate-500">
+                              <span className="text-amber-400">⭐</span>
+                              <span className="font-semibold text-slate-700">{s.rating}</span>
+                              <span>({s.reviews})</span>
+                            </div>
+                            <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">-{s.disc}% OFF</span>
+                          </div>
+                          <div className="flex items-center gap-2 mt-2 text-xs text-slate-400">
+                            <span>🕐 {s.delivery}</span>
+                            <span>·</span>
+                            <span>Pedido mín. {$$(s.minOrder)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── OFERTAS DEL DÍA (scroll horizontal) ── */}
+                <div className="mb-7">
+                  <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-extrabold text-slate-800">🔥 Ofertas del día</h2>
+                    <span className="text-xs text-sky-500 font-semibold cursor-pointer hover:underline" onClick={() => setActiveCat('todas')}>Ver todo</span>
+                  </div>
+                  <div className="flex gap-4 overflow-x-auto pb-2" style={{scrollbarWidth:'none'}}>
+                    {deals.map(p => (
+                      <div key={p.id} className="flex-shrink-0 w-44 bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                        <div className="relative h-28 flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+                          <span className="text-6xl">{p.emoji}</span>
+                          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-md">-{p.disc}%</div>
+                        </div>
+                        <div className="p-3">
+                          <p className="text-xs font-semibold text-slate-800 leading-snug mb-1 line-clamp-2">{p.name}</p>
+                          <div className="flex items-center gap-1 mb-2">
+                            <span className="font-extrabold text-slate-900 text-sm">{$$(p.price)}</span>
+                            <span className="text-xs text-slate-400 line-through">{$$(p.retail)}</span>
+                          </div>
+                          <button onClick={() => addToCart(p)}
+                            className={`w-full py-1.5 rounded-lg text-xs font-bold transition active:scale-95 ${cart.some(i=>i.id===p.id) ? 'bg-emerald-500 text-white' : 'bg-sky-500 text-white hover:bg-sky-600'}`}>
+                            {cart.some(i=>i.id===p.id) ? '✓ Agregado' : '+ Agregar'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── PRODUCTOS POR CATEGORÍA ── */}
+                <div>
+                  <h2 className="text-lg font-extrabold text-slate-800 mb-3">
+                    {activeCat === 'todas' ? '⭐ Productos Destacados' : `${CATS.find(c=>c.id===activeCat)?.emoji} ${activeCat}`}
+                  </h2>
+                  <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {catProducts.map(p => (
+                      <RappiCard key={p.id} p={p} inCart={cart.some(i => i.id === p.id)} onAdd={addToCart} />
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const CartPage = ({ cart, setCart, setPage }) => {
+      const [ordered, setOrdered] = useState(false);
+      const [showCO, setShowCO] = useState(false);
+      const upd = (id,d) => setCart(prev=>prev.map(i=>i.id===id?{...i,qty:Math.max(i.minOrder,i.qty+d*i.minOrder)}:i));
+      const rem = (id) => setCart(prev=>prev.filter(i=>i.id!==id));
+      const subtotal = cart.reduce((a,i)=>a+i.price*i.qty,0);
+      const savings  = cart.reduce((a,i)=>a+(i.retail-i.price)*i.qty,0);
+      const comm     = subtotal*0.025;
+      const total    = subtotal+comm;
+      const place = () => { setShowCO(false); setOrdered(true); setTimeout(()=>{setCart([]);setPage('myorders');},2500); };
+
+      if(ordered) return (
+        <div className="flex flex-col items-center justify-center py-28 fade-in p-8">
+          <div className="text-8xl mb-6">🎉</div>
+          <h2 className="text-3xl font-bold text-slate-800 mb-2">¡Pedido realizado!</h2>
+          <p className="text-slate-500">Redirigiendo a tu historial...</p>
+        </div>
+      );
+      if(cart.length===0) return (
+        <div className="flex flex-col items-center justify-center py-28 fade-in p-8">
+          <div className="text-7xl mb-6">🛒</div>
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Tu carrito está vacío</h2>
+          <Btn v="primary" sz="lg" onClick={()=>setPage('catalog')}>Ir al catálogo</Btn>
+        </div>
+      );
+      return (
+        <div className="fade-in p-8">
+          <TB title="Mi Carrito" sub={`${cart.length} producto(s)`} />
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2 space-y-3">
+              {cart.map(item=>(
+                <Card key={item.id} className="p-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-4xl">{item.emoji}</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-slate-800">{item.name}</div>
+                      <div className="text-xs text-slate-400 mb-1">{item.dist} · Mín: {item.minOrder} {item.unit}s</div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-sky-600">{$$(item.price)}/{item.unit}</span>
+                        <span className="text-xs text-slate-400 line-through">{$$(item.retail)}</span>
+                        <Badge label={`-${item.disc}%`} cls="bg-emerald-100 text-emerald-700" />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={()=>upd(item.id,-1)} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 font-bold">−</button>
+                      <span className="w-10 text-center font-semibold text-sm">{item.qty}</span>
+                      <button onClick={()=>upd(item.id,1)} className="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 font-bold">+</button>
+                    </div>
+                    <div className="text-right w-28">
+                      <div className="font-bold text-slate-800">{$$(item.price*item.qty)}</div>
+                      <div className="text-xs text-emerald-600">ahorras {$$((item.retail-item.price)*item.qty)}</div>
+                    </div>
+                    <button onClick={()=>rem(item.id)} className="text-red-400 hover:text-red-600 text-xl ml-1">×</button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+            <div>
+              <Card className="p-5 sticky top-4">
+                <h3 className="font-bold text-slate-800 mb-4">Resumen</h3>
+                <div className="space-y-2 mb-4">
+                  <div className="flex justify-between text-sm"><span className="text-slate-600">Subtotal</span><span className="font-medium">{$$(subtotal)}</span></div>
+                  <div className="flex justify-between text-sm"><span className="text-emerald-600">Ahorros</span><span className="font-semibold text-emerald-600">−{$$(savings)}</span></div>
+                  <div className="flex justify-between text-sm text-slate-400"><span>Comisión plataforma (2.5%)</span><span>{$$(comm)}</span></div>
+                  <div className="h-px bg-slate-100 my-2" />
+                  <div className="flex justify-between font-bold text-lg"><span>Total</span><span className="text-sky-600">{$$(total)}</span></div>
+                </div>
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl mb-4 text-center">
+                  <div className="text-sm font-bold text-emerald-800">💰 Ahorraste {$$(savings)}</div>
+                  <div className="text-xs text-emerald-600">vs precio de mercado</div>
+                </div>
+                <Btn v="green" full sz="lg" onClick={()=>setShowCO(true)}>Realizar pedido →</Btn>
+              </Card>
+            </div>
+          </div>
+          <Modal open={showCO} onClose={()=>setShowCO(false)} title="Confirmar pedido">
+            <div className="space-y-4">
+              <div className="p-4 bg-slate-50 rounded-xl text-sm">
+                {cart.map(i=><div key={i.id} className="flex justify-between mb-1"><span>{i.name} ×{i.qty}</span><span>{$$(i.price*i.qty)}</span></div>)}
+                <div className="h-px bg-slate-200 my-2" /><div className="flex justify-between font-bold"><span>Total</span><span>{$$(total)}</span></div>
+              </div>
+              <Field label="Dirección de entrega" icon="📍" placeholder="Calle, número, colonia, ciudad..." />
+              <Sel label="Método de pago" value="transferencia" onChange={()=>{}} opts={[{v:'trans',l:'🏦 Transferencia bancaria'},{v:'cheque',l:'📄 Cheque'},{v:'credito',l:'💳 Crédito comercial (30 días)'}]} />
+              <Btn v="green" full sz="lg" onClick={place}>✓ Confirmar pedido</Btn>
+            </div>
+          </Modal>
+        </div>
+      );
+    };
+
+    const MyOrders = () => (
+      <div className="fade-in p-8">
+        <TB title="Mis Pedidos" sub="Historial de compras" />
+        <div className="space-y-4">
+          {ORDERS.map(o=>(
+            <Card key={o.id} className="p-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <span className="font-bold font-mono text-slate-800">{o.id}</span>
+                  <SBadge s={o.status} />
+                </div>
+                <span className="text-xl font-bold text-sky-600">{$$(o.total)}</span>
+              </div>
+              <div className="text-sm text-slate-500 mb-3">{o.date}</div>
+              <div className="flex gap-2">
+                <Btn v="ghost" sz="sm">📄 Ver detalle</Btn>
+                {o.status==='entregado'&&<><Btn v="outline" sz="sm">⭐ Calificar</Btn><Btn v="primary" sz="sm">🔄 Repetir</Btn></>}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+
+    const Savings = () => {
+      const total = SAVINGS_DATA.reduce((a,v)=>a+v,0);
+      const spent  = [18600,21800,28400,23100,31500,26900].reduce((a,v)=>a+v,0);
+      return (
+        <div className="fade-in p-8">
+          <TB title="Mis Ahorros" sub="Cuánto has ahorrado usando MarketHub vs precios de mercado" />
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <KPI icon="💰" label="Total ahorrado" value={$$(total)} sub="vs precio de mercado" color="green" />
+            <KPI icon="🛒" label="Total comprado" value={$$(spent)} sub="en 6 meses" color="blue" />
+            <KPI icon="📊" label="Ahorro promedio" value={pct((total/(total+spent))*100)} sub="por transacción" color="amber" />
+          </div>
+          <div className="grid grid-cols-2 gap-5 mb-5">
+            <Card className="p-5">
+              <h3 className="font-bold text-slate-800 mb-4">Ahorros por mes</h3>
+              <LineChart
+                labels={MONTHS}
+                datasets={[{label:'Ahorro mensual',data:SAVINGS_DATA,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,0.1)',borderWidth:2,pointBackgroundColor:'#10b981'}]}
+                height={200}
+              />
+            </Card>
+            <Card className="p-5">
+              <h3 className="font-bold text-slate-800 mb-4">Ahorros por categoría</h3>
+              <DonutChart
+                labels={['Granos','Aceites','Lácteos','Conservas','Bebidas']}
+                data={[38,26,18,12,6]}
+                colors={['#0ea5e9','#10b981','#8b5cf6','#f59e0b','#ef4444']}
+                height={200}
+              />
+            </Card>
+          </div>
+          <Card className="p-5">
+            <div className="flex items-center gap-5 p-5 bg-emerald-50 rounded-2xl border border-emerald-200">
+              <div className="text-6xl">🏆</div>
+              <div>
+                <div className="text-3xl font-extrabold text-emerald-800">{$$(total)}</div>
+                <div className="text-emerald-700 font-semibold">ahorrados en 6 meses comprando en MarketHub</div>
+                <div className="text-sm text-emerald-600 mt-1">Ese dinero vuelve a tu negocio. Sigue comprando y sigue ahorrando.</div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    };
+
+    /* ═══════════════════════════════════════════
+       ADMIN PAGES
+    ═══════════════════════════════════════════ */
+    const AdminOverview = () => (
+      <div className="fade-in">
+        <TB title="Panel Administrador" sub="Salud financiera de la plataforma" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <KPI icon="💸" label="Revenue plataforma" value={$$(89640)} sub="Junio 2024" color="green" />
+          <KPI icon="📅" label="Suscripciones activas" value="384" sub="Pro: 241 · Ent: 143" color="blue" />
+          <KPI icon="🏭" label="Distribuidores" value="1,247" sub="+89 este mes" color="purple" />
+          <KPI icon="🛒" label="Compradores" value="15,432" sub="+1,240 este mes" color="amber" />
+        </div>
+        <div className="grid grid-cols-2 gap-5 mb-5">
+          <Card className="p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Revenue por fuente (6 meses)</h3>
+            <BarChart
+              labels={MONTHS}
+              datasets={[
+                {label:'Comisiones',data:[3420,3720,4580,4310,5190,4920],backgroundColor:'rgba(14,165,233,0.8)'},
+                {label:'Suscripciones',data:[8960,9240,9840,10200,11100,11400],backgroundColor:'rgba(16,185,129,0.8)'},
+                {label:'Destacados',data:[2100,2400,3200,2800,3600,3100],backgroundColor:'rgba(245,158,11,0.8)'},
+              ]}
+              height={220}
+            />
+          </Card>
+          <Card className="p-5">
+            <h3 className="font-bold text-slate-800 mb-4">Mix de revenue — Junio 2024</h3>
+            <DonutChart
+              labels={['Comisiones','Suscripciones','Destacados']}
+              data={[4920,11400,3100]}
+              colors={['#0ea5e9','#10b981','#f59e0b']}
+              height={220}
+            />
+          </Card>
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            {icon:'💸',title:'Comisiones (Junio)',val:$$(4920),sub:'2.5% sobre $196,800 en ventas',cls:'bg-sky-50 border-sky-200'},
+            {icon:'📅',title:'Suscripciones (Junio)',val:$$(11400),sub:'241×$299 + 143×$799',cls:'bg-emerald-50 border-emerald-200'},
+            {icon:'⭐',title:'Destacados (Junio)',val:$$(3100),sub:'62 espacios vendidos',cls:'bg-amber-50 border-amber-200'},
+          ].map(s=>(
+            <div key={s.title} className={`p-5 rounded-2xl border ${s.cls}`}>
+              <div className="text-2xl mb-2">{s.icon}</div>
+              <div className="font-bold text-slate-800 text-sm mb-1">{s.title}</div>
+              <div className="text-2xl font-extrabold text-slate-900 mb-1">{s.val}</div>
+              <div className="text-xs text-slate-500">{s.sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+
+    const AdminComm = () => (
+      <div className="fade-in">
+        <TB title="Comisiones" sub="Registro por transacción" />
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <KPI icon="💸" label="Comisiones del mes" value={$$(4920)} color="green" />
+          <KPI icon="📊" label="Transacciones" value="197" sub="prom $24.97/tx" color="blue" />
+          <KPI icon="📈" label="Volumen vendido" value={$$(196800)} color="purple" />
+        </div>
+        <Card>
+          <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="font-bold text-slate-800">Transacciones recientes</h3>
+            <Btn v="outline" sz="sm">📥 Exportar CSV</Btn>
+          </div>
+          <table className="w-full text-sm">
+            <thead><tr className="border-b border-slate-100">{['Pedido','Distribuidor','Comprador','Venta','Comisión (2.5%)','Estado'].map(h=><th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+            <tbody>
+              {ORDERS.map(o=>(
+                <tr key={o.id} className="border-b border-slate-50 hover:bg-slate-50">
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">{o.id}</td>
+                  <td className="px-4 py-3 font-medium text-slate-700">Grupo Alianza MX</td>
+                  <td className="px-4 py-3 text-slate-500">{o.buyer}</td>
+                  <td className="px-4 py-3 font-semibold">{$$(o.total)}</td>
+                  <td className="px-4 py-3 font-bold text-emerald-600">{$$(o.comm)}</td>
+                  <td className="px-4 py-3"><SBadge s={o.status} /></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      </div>
+    );
+
+    const AdminUsers = () => {
+      const users=[
+        {name:'Grupo Alianza MX',type:'dist',plan:'Pro',orders:142,rev:72300},
+        {name:'Distribuidora del Norte',type:'dist',plan:'Enterprise',orders:218,rev:134200},
+        {name:'Alimentos Centrales SA',type:'dist',plan:'Pro',orders:87,rev:56800},
+        {name:'Abarrotes La Conchita',type:'buyer',plan:'—',orders:34,rev:48200},
+        {name:'Supermercado Familiar',type:'buyer',plan:'—',orders:21,rev:32100},
+        {name:'Restaurante El Buen Sabor',type:'buyer',plan:'—',orders:15,rev:21400},
+      ];
+      return (
+        <div className="fade-in">
+          <TB title="Usuarios" sub="Distribuidores y compradores" />
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <KPI icon="🏭" label="Distribuidores" value="1,247" color="blue" />
+            <KPI icon="🛒" label="Compradores" value="15,432" color="green" />
+            <KPI icon="🆕" label="Nuevos este mes" value="1,329" color="amber" />
+          </div>
+          <Card>
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-slate-100">{['Usuario','Tipo','Plan','Pedidos','Revenue','Estado'].map(h=><th key={h} className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+              <tbody>
+                {users.map(u=>(
+                  <tr key={u.name} className="border-b border-slate-50 hover:bg-slate-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3"><Av name={u.name} size={32}/><span className="font-medium text-slate-800">{u.name}</span></div>
+                    </td>
+                    <td className="px-4 py-3"><Badge label={u.type==='dist'?'🏭 Distribuidor':'🛒 Comprador'} cls={u.type==='dist'?'bg-violet-100 text-violet-700':'bg-sky-100 text-sky-700'} /></td>
+                    <td className="px-4 py-3">{u.plan!=='—'?<Badge label={u.plan} cls={u.plan==='Enterprise'?'bg-violet-100 text-violet-700':'bg-sky-100 text-sky-700'} />:<span className="text-slate-400">—</span>}</td>
+                    <td className="px-4 py-3 text-slate-600">{u.orders}</td>
+                    <td className="px-4 py-3 font-semibold">{$$(u.rev)}</td>
+                    <td className="px-4 py-3"><Badge label="Activo" cls="bg-emerald-100 text-emerald-700" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </div>
+      );
+    };
+
+    const AdminFeat = () => (
+      <div className="fade-in">
+        <TB title="Espacios Destacados" sub="Publicidad premium en la plataforma"
+          action={<Btn v="primary">+ Nuevo espacio</Btn>} />
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <KPI icon="⭐" label="Espacios activos" value="3 / 10" sub="7 disponibles" color="amber" />
+          <KPI icon="💰" label="Revenue destacados" value={$$(3100)} sub="Junio 2024" color="green" />
+          <KPI icon="👁️" label="Impresiones" value="9,870" sub="CTR 7.6%" color="blue" />
+        </div>
+        <div className="space-y-4">
+          {[
+            {pos:'Banner Principal',dist:'Grupo Alianza MX',prod:'Arroz Extra Premium 5kg',price:350,imp:4820,clicks:312},
+            {pos:'Top Búsqueda #1',dist:'Alimentos Centrales SA',prod:'Café Molido 1kg',price:250,imp:3210,clicks:241},
+            {pos:'Sección Granos',dist:'Distribuidora del Norte',prod:'Frijol Negro 1kg',price:150,imp:1840,clicks:98},
+          ].map(s=>(
+            <Card key={s.pos} className="p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge label={`⭐ ${s.pos}`} cls="bg-amber-100 text-amber-700" />
+                    <Badge label="Activo" cls="bg-emerald-100 text-emerald-700" />
+                  </div>
+                  <div className="font-bold text-slate-800 mb-1">{s.dist} · {s.prod}</div>
+                  <div className="flex gap-5 text-sm text-slate-500">
+                    <span>👁️ {s.imp.toLocaleString()} impresiones</span>
+                    <span>🖱️ {s.clicks} clics ({((s.clicks/s.imp)*100).toFixed(1)}% CTR)</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-sky-600">{$$(s.price)}</div>
+                  <div className="text-xs text-slate-400">price/mo</div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+
+    /* ═══════════════════════════════════════════
+       APP ROOT
+    ═══════════════════════════════════════════ */
+    const App = () => {
+      const [view, setView] = useState('landing');
+      const [role, setRole] = useState(null);
+      const [page, setPage] = useState('');
+      const [cart, setCart] = useState([]);
+
+      const USERS = {
+        distributor:{ name:'Grupo Alianza MX', email:'ventas@grupoalianza.mx' },
+        buyer:      { name:'Abarrotes La Conchita', email:'conchita@correo.mx' },
+        admin:      { name:'Admin MarketHub', email:'admin@markethub.mx' },
+      };
+
+      const login = (r) => {
+        setRole(r);
+        setPage(r==='distributor'?'dash':r==='admin'?'aoverview':'catalog');
+        setView('app');
+      };
+      const logout = () => { setView('landing'); setRole(null); setCart([]); };
+
+      if(view==='landing') return <Landing go={login} />;
+
+      const renderPage = () => {
+        if(role==='distributor') switch(page){
+          case 'dash':      return <DistDash setPage={setPage} />;
+          case 'products':  return <DistProducts />;
+          case 'inventory': return <Inventory />;
+          case 'orders':    return <DistOrders />;
+          case 'promos':    return <Promos />;
+          case 'analytics': return <Analytics />;
+          case 'plans':     return <Plans />;
+          default:          return <DistDash setPage={setPage} />;
+        }
+        if(role==='buyer') switch(page){
+          case 'catalog':   return <Catalog cart={cart} setCart={setCart} />;
+          case 'cart':      return <CartPage cart={cart} setCart={setCart} setPage={setPage} />;
+          case 'myorders':  return <MyOrders />;
+          case 'savings':   return <Savings />;
+          default:          return <Catalog cart={cart} setCart={setCart} />;
+        }
+        if(role==='admin') switch(page){
+          case 'aoverview': return <AdminOverview />;
+          case 'acomm':     return <AdminComm />;
+          case 'ausers':    return <AdminUsers />;
+          case 'afeat':     return <AdminFeat />;
+          default:          return <AdminOverview />;
+        }
+      };
+
+      return (
+        <div className="flex min-h-screen bg-slate-50">
+          <Sidebar role={role} page={page} setPage={setPage} user={USERS[role]} onLogout={logout} cartCount={cart.length} />
+          <main className={`flex-1 overflow-y-auto min-w-0 ${role==='buyer' ? '' : 'p-8'}`}>{renderPage()}</main>
+
+          {/* DEMO SWITCHER */}
+          <div className="fixed bottom-5 right-5 flex flex-col gap-2 items-end z-50">
+            <div className="text-xs text-slate-400 text-right">Vista demo:</div>
+            {[{r:'distributor',l:'🏭 Distribuidor'},{r:'buyer',l:'🛒 Comprador'},{r:'admin',l:'⚙️ Admin'}].map(x=>(
+              <Btn key={x.r} v={role===x.r?'primary':'outline'} sz="sm" onClick={()=>login(x.r)}
+                cls="shadow-lg">{x.l}</Btn>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
