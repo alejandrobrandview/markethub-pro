@@ -1500,6 +1500,12 @@
 
       const resetFilters = () => { setActiveCat('todas'); setFilterDist('todas'); setMinDisc(0); setPriceMax(999); setSortBy('featured'); setSearch(''); };
 
+      /* Variables para la vista sin filtros activos */
+      const catProducts = activeCat === 'todas'
+        ? PRODUCTS.filter(p => p.featured)
+        : PRODUCTS.filter(p => p.cat === activeCat);
+      const deals = [...PRODUCTS].sort((a,b) => b.disc - a.disc).slice(0, 6);
+
       return (
         <div className="fade-in -m-8">
           {/* ── Barra de búsqueda sticky con filtros ── */}
