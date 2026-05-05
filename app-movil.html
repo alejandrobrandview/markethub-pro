@@ -83,34 +83,34 @@ const { useState, useEffect, useRef, useMemo } = React;
    DATOS
 ═══════════════════════════════════ */
 const PRODUCTS = [
-  {id:1,name:'Arroz Extra Premium 5kg',cat:'Granos',price:89,retail:120,stock:1200,min:10,unit:'costal',dist:'Grupo Alianza MX',distId:'d1',emoji:'🌾',featured:true,disc:26,rating:4.8,rev:142},
-  {id:2,name:'Aceite Vegetal 1L',cat:'Aceites',price:28,retail:42,stock:800,min:24,unit:'botella',dist:'Grupo Alianza MX',distId:'d1',emoji:'🫙',featured:true,disc:33,rating:4.6,rev:98},
-  {id:3,name:'Frijol Negro 1kg',cat:'Granos',price:32,retail:52,stock:2000,min:20,unit:'bolsa',dist:'Distribuidora Norte',distId:'d2',emoji:'🫘',featured:false,disc:38,rating:4.9,rev:215},
-  {id:4,name:'Azúcar 50kg',cat:'Endulzantes',price:420,retail:560,stock:300,min:5,unit:'costal',dist:'Distribuidora Norte',distId:'d2',emoji:'🍬',featured:false,disc:25,rating:4.5,rev:67},
-  {id:5,name:'Harina de Trigo 25kg',cat:'Harinas',price:195,retail:265,stock:600,min:4,unit:'saco',dist:'Alimentos Centrales',distId:'d3',emoji:'🥣',featured:true,disc:26,rating:4.7,rev:88},
-  {id:6,name:'Sal de Mesa 1kg',cat:'Condimentos',price:8,retail:14,stock:5000,min:48,unit:'bolsa',dist:'Alimentos Centrales',distId:'d3',emoji:'🧂',featured:false,disc:43,rating:4.4,rev:203},
-  {id:7,name:'Leche Entera UHT 1L',cat:'Lácteos',price:19,retail:28,stock:3000,min:24,unit:'litro',dist:'Grupo Alianza MX',distId:'d1',emoji:'🥛',featured:true,disc:32,rating:4.7,rev:176},
-  {id:8,name:'Tomate Enlatado 800g',cat:'Conservas',price:22,retail:35,stock:1500,min:12,unit:'lata',dist:'Distribuidora Norte',distId:'d2',emoji:'🍅',featured:false,disc:37,rating:4.6,rev:94},
-  {id:9,name:'Café Molido 1kg',cat:'Bebidas',price:145,retail:210,stock:250,min:6,unit:'bolsa',dist:'Alimentos Centrales',distId:'d3',emoji:'☕',featured:true,disc:31,rating:4.9,rev:256},
-  {id:10,name:'Mayonesa Industrial 4kg',cat:'Condimentos',price:95,retail:145,stock:400,min:6,unit:'cubeta',dist:'Grupo Alianza MX',distId:'d1',emoji:'🥣',featured:true,disc:34,rating:4.5,rev:78},
-  {id:11,name:'Pasta Spaghetti 5kg',cat:'Pastas',price:58,retail:85,stock:700,min:10,unit:'paquete',dist:'Distribuidora Norte',distId:'d2',emoji:'🍝',featured:false,disc:32,rating:4.7,rev:134},
-  {id:12,name:'Avena Premium 1kg',cat:'Cereales',price:35,retail:55,stock:900,min:12,unit:'bolsa',dist:'Alimentos Centrales',distId:'d3',emoji:'🌿',featured:false,disc:36,rating:4.8,rev:112},
+  {id:1,name:'Arroz de Primera 25 lbs',cat:'Granos',price:12.50,retail:17.00,stock:1200,min:10,unit:'bolsa',dist:'Diana Distribuciones S.A.',distId:'d1',emoji:'🌾',featured:true,disc:26,rating:4.8,rev:142},
+  {id:2,name:'Aceite Vegetal Corona 1L',cat:'Aceites',price:2.80,retail:3.90,stock:800,min:24,unit:'botella',dist:'Diana Distribuciones S.A.',distId:'d1',emoji:'🫙',featured:true,disc:28,rating:4.6,rev:98},
+  {id:3,name:'Frijoles Rojos de Seda 1 lb',cat:'Granos',price:1.45,retail:2.20,stock:2000,min:48,unit:'bolsa',dist:'Interamérica Alimentos S.A.',distId:'d2',emoji:'🫘',featured:true,disc:34,rating:4.9,rev:215},
+  {id:4,name:'Azúcar San Francisco 50 lbs',cat:'Endulzantes',price:24.50,retail:32.00,stock:300,min:5,unit:'costal',dist:'Interamérica Alimentos S.A.',distId:'d2',emoji:'🍬',featured:false,disc:23,rating:4.5,rev:67},
+  {id:5,name:'Harina de Maíz Nixtamalizada 1kg',cat:'Harinas',price:1.20,retail:1.65,stock:600,min:24,unit:'bolsa',dist:'Distribuidora APS S.A.',distId:'d3',emoji:'🌽',featured:true,disc:27,rating:4.7,rev:88},
+  {id:6,name:'Sal Yodada 1 lb',cat:'Condimentos',price:0.45,retail:0.75,stock:5000,min:96,unit:'bolsa',dist:'Distribuidora APS S.A.',distId:'d3',emoji:'🧂',featured:false,disc:40,rating:4.4,rev:203},
+  {id:7,name:'Leche Entera Pasteurizada 1L',cat:'Lácteos',price:1.10,retail:1.55,stock:3000,min:24,unit:'litro',dist:'Diana Distribuciones S.A.',distId:'d1',emoji:'🥛',featured:true,disc:29,rating:4.7,rev:176},
+  {id:8,name:'Crema Ácida Tres Estrellas 500ml',cat:'Lácteos',price:1.80,retail:2.60,stock:1500,min:12,unit:'bolsa',dist:'Interamérica Alimentos S.A.',distId:'d2',emoji:'🍦',featured:false,disc:31,rating:4.6,rev:94},
+  {id:9,name:'Galletas Soda Diana 600g',cat:'Snacks',price:1.95,retail:2.80,stock:900,min:24,unit:'paquete',dist:'Diana Distribuciones S.A.',distId:'d1',emoji:'🍪',featured:true,disc:30,rating:4.8,rev:312},
+  {id:10,name:'Mortadela de Pollo 1kg',cat:'Embutidos',price:4.20,retail:6.00,stock:400,min:12,unit:'unidad',dist:'Distribuidora APS S.A.',distId:'d3',emoji:'🥩',featured:false,disc:30,rating:4.5,rev:78},
+  {id:11,name:'Detergente en Polvo 5kg',cat:'Limpieza',price:8.50,retail:12.00,stock:700,min:6,unit:'bolsa',dist:'Interamérica Alimentos S.A.',distId:'d2',emoji:'🧺',featured:false,disc:29,rating:4.7,rev:134},
+  {id:12,name:'Café Grano de Oro Molido 250g',cat:'Bebidas',price:3.20,retail:4.75,stock:250,min:12,unit:'bolsa',dist:'Distribuidora APS S.A.',distId:'d3',emoji:'☕',featured:true,disc:33,rating:4.9,rev:256},
 ];
 const STORES=[
-  {id:'d1',name:'Grupo Alianza MX',tag:'Granos · Lácteos · Aceites',rating:4.8,rev:142,delivery:'2-4 hrs',emoji:'🏭',grad:'linear-gradient(135deg,#0ea5e9,#6366f1)',disc:33,products:4},
-  {id:'d2',name:'Distribuidora Norte',tag:'Granos · Conservas · Pastas',rating:4.9,rev:215,delivery:'3-5 hrs',emoji:'🚛',grad:'linear-gradient(135deg,#10b981,#0891b2)',disc:38,products:4},
-  {id:'d3',name:'Alimentos Centrales',tag:'Harinas · Condimentos · Café',rating:4.7,rev:88,delivery:'2-3 hrs',emoji:'🏪',grad:'linear-gradient(135deg,#f59e0b,#ef4444)',disc:43,products:4},
+  {id:'d1',name:'Diana Distribuciones S.A.',tag:'Snacks · Lácteos · Granos',rating:4.8,rev:142,delivery:'2-4 hrs',emoji:'🏭',grad:'linear-gradient(135deg,#0ea5e9,#6366f1)',disc:30,products:4},
+  {id:'d2',name:'Interamérica Alimentos S.A.',tag:'Granos · Lácteos · Limpieza',rating:4.9,rev:215,delivery:'3-5 hrs',emoji:'🚛',grad:'linear-gradient(135deg,#10b981,#0891b2)',disc:34,products:4},
+  {id:'d3',name:'Distribuidora APS S.A.',tag:'Harinas · Embutidos · Café',rating:4.7,rev:88,delivery:'2-3 hrs',emoji:'🏪',grad:'linear-gradient(135deg,#f59e0b,#ef4444)',disc:33,products:4},
 ];
 const CATS=[
   {id:'todas',l:'Todo',e:'🏠'},{id:'Granos',l:'Granos',e:'🌾'},{id:'Lácteos',l:'Lácteos',e:'🥛'},
-  {id:'Aceites',l:'Aceites',e:'🫙'},{id:'Harinas',l:'Harinas',e:'🥣'},{id:'Condimentos',l:'Condim.',e:'🧂'},
-  {id:'Conservas',l:'Conservas',e:'🍅'},{id:'Bebidas',l:'Bebidas',e:'☕'},{id:'Cereales',l:'Cereales',e:'🌿'},
+  {id:'Aceites',l:'Aceites',e:'🫙'},{id:'Harinas',l:'Harinas',e:'🌽'},{id:'Snacks',l:'Snacks',e:'🍪'},
+  {id:'Embutidos',l:'Embutidos',e:'🥩'},{id:'Bebidas',l:'Bebidas',e:'☕'},{id:'Limpieza',l:'Limpieza',e:'🧺'},
 ];
 const ORDERS=[
-  {id:'ORD-001',buyer:'Abarrotes La Conchita',date:'24 Abr',status:'entregado',total:2692,items:3},
-  {id:'ORD-002',buyer:'Supermercado Familiar',date:'22 Abr',status:'en_camino',total:1452,items:2},
-  {id:'ORD-003',buyer:'Restaurante Buen Sabor',date:'20 Abr',status:'pendiente',total:1668,items:4},
-  {id:'ORD-004',buyer:'Tienda Don Pepe',date:'18 Abr',status:'confirmado',total:2048,items:2},
+  {id:'ORD-001',buyer:'Tienda El Progreso',date:'24 Abr',status:'entregado',total:312.50,items:3},
+  {id:'ORD-002',buyer:'Supermercado La Colonia',date:'22 Abr',status:'en_camino',total:189.20,items:2},
+  {id:'ORD-003',buyer:'Pupusería Doña Carmen',date:'20 Abr',status:'pendiente',total:145.80,items:4},
+  {id:'ORD-004',buyer:'Abarrotes San Jacinto',date:'18 Abr',status:'confirmado',total:278.40,items:2},
 ];
 const $$=n=>'$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
 
@@ -302,46 +302,108 @@ const HomeScreen=({cart,setCart,goStore,goProduct})=>{
 const ExplorarScreen=({cart,setCart,goStore,goProduct})=>{
   const [search,setSearch]=useState('');
   const [cat,setCat]=useState('todas');
+  const [sortBy,setSortBy]=useState('featured');
+  const [minDisc,setMinDisc]=useState(0);
+  const [showSort,setShowSort]=useState(false);
+
   const filtered=useMemo(()=>{
-    let l=PRODUCTS.filter(p=>cat==='todas'||p.cat===cat);
-    if(search)l=l.filter(p=>p.name.toLowerCase().includes(search.toLowerCase()));
-    return l;
-  },[cat,search]);
+    let l=PRODUCTS.filter(p=>{
+      const mCat=cat==='todas'||p.cat===cat;
+      const mSearch=!search||p.name.toLowerCase().includes(search.toLowerCase())||p.dist.toLowerCase().includes(search.toLowerCase());
+      const mDisc=p.disc>=minDisc;
+      return mCat&&mSearch&&mDisc;
+    });
+    switch(sortBy){
+      case 'price_asc': return l.sort((a,b)=>a.price-b.price);
+      case 'price_desc':return l.sort((a,b)=>b.price-a.price);
+      case 'disc':      return l.sort((a,b)=>b.disc-a.disc);
+      case 'rating':    return l.sort((a,b)=>b.rating-a.rating);
+      default:          return l.sort((a,b)=>(b.featured?1:0)-(a.featured?1:0));
+    }
+  },[cat,search,sortBy,minDisc]);
+
   const addToCart=p=>setCart(prev=>{
     const ex=prev.find(i=>i.id===p.id);
     return ex?prev.map(i=>i.id===p.id?{...i,qty:i.qty+p.min}:i):[...prev,{...p,qty:p.min}];
   });
+
+  const SORT_OPTS=[
+    {v:'featured',l:'⭐ Destacados'},
+    {v:'disc',l:'🔥 Mayor descuento'},
+    {v:'rating',l:'⭐ Mejor rating'},
+    {v:'price_asc',l:'💲 Menor precio'},
+    {v:'price_desc',l:'💲 Mayor precio'},
+  ];
+
+  const isFiltering=search||cat!=='todas'||minDisc>0||sortBy!=='featured';
+
   return(
     <div className="screen fade-in">
       <StatusBar/>
-      <div style={{padding:'0 20px 12px'}}>
-        <div style={{fontSize:22,fontWeight:800,color:'#111827',marginBottom:12}}>Explorar</div>
-        {/* Search */}
-        <div style={{background:'#f2f2f7',borderRadius:14,display:'flex',alignItems:'center',gap:8,padding:'10px 14px',marginBottom:14}}>
+      <div style={{padding:'12px 16px 8px',background:'#fff',borderBottom:'1px solid #f1f5f9'}}>
+        <div style={{fontSize:20,fontWeight:800,color:'#111827',marginBottom:10}}>Explorar productos</div>
+        {/* Search bar */}
+        <div style={{background:'#f2f2f7',borderRadius:14,display:'flex',alignItems:'center',gap:8,padding:'10px 14px',marginBottom:10}}>
           <span style={{fontSize:16}}>🔍</span>
-          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar productos..."
-            style={{background:'none',border:'none',outline:'none',flex:1,fontSize:15,color:'#111827'}}/>
+          <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar productos o distribuidores..."
+            style={{background:'none',border:'none',outline:'none',flex:1,fontSize:14,color:'#111827'}}/>
           {search&&<button onClick={()=>setSearch('')} style={{background:'none',border:'none',color:'#9ca3af',fontSize:16,cursor:'pointer'}}>✕</button>}
+        </div>
+        {/* Filtros rápidos */}
+        <div style={{display:'flex',gap:8,alignItems:'center',marginBottom:8}}>
+          {/* Botón ordenar */}
+          <div style={{position:'relative'}}>
+            <button onClick={()=>setShowSort(s=>!s)} style={{
+              display:'flex',alignItems:'center',gap:6,padding:'7px 12px',borderRadius:10,
+              border:`1.5px solid ${showSort?'#0ea5e9':'#e5e7eb'}`,
+              background:showSort?'#0ea5e9':'#fff',color:showSort?'#fff':'#374151',
+              fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'
+            }}>⚙️ Ordenar</button>
+            {showSort&&(
+              <div style={{position:'absolute',top:'110%',left:0,background:'#fff',borderRadius:14,boxShadow:'0 8px 24px rgba(0,0,0,0.15)',border:'1px solid #f1f5f9',zIndex:50,minWidth:180,overflow:'hidden'}}>
+                {SORT_OPTS.map(o=>(
+                  <button key={o.v} onClick={()=>{setSortBy(o.v);setShowSort(false);}} style={{
+                    width:'100%',textAlign:'left',padding:'11px 14px',border:'none',cursor:'pointer',fontSize:13,
+                    background:sortBy===o.v?'#eff6ff':'#fff',color:sortBy===o.v?'#0ea5e9':'#374151',
+                    fontWeight:sortBy===o.v?700:400,borderBottom:'1px solid #f8fafc'
+                  }}>{o.l}</button>
+                ))}
+              </div>
+            )}
+          </div>
+          {/* Descuento mínimo */}
+          {[0,25,30].map(d=>(
+            <button key={d} onClick={()=>setMinDisc(d)} style={{
+              padding:'7px 10px',borderRadius:10,border:`1.5px solid ${minDisc===d?'#0ea5e9':'#e5e7eb'}`,
+              background:minDisc===d?'#0ea5e9':'#fff',color:minDisc===d?'#fff':'#374151',
+              fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'
+            }}>{d===0?'Todo':`-${d}%+`}</button>
+          ))}
+          {isFiltering&&<button onClick={()=>{setSearch('');setCat('todas');setSortBy('featured');setMinDisc(0);}} style={{
+            marginLeft:'auto',padding:'7px 10px',borderRadius:10,border:'1.5px solid #fecaca',
+            background:'#fff',color:'#ef4444',fontSize:12,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap'
+          }}>✕ Limpiar</button>}
         </div>
         {/* Cats horizontal */}
         <div style={{display:'flex',gap:8,overflowX:'auto',paddingBottom:4}} className="no-scroll">
           {CATS.map(c=><Chip key={c.id} label={c.e+' '+c.l} active={cat===c.id} onClick={()=>setCat(c.id)}/>)}
         </div>
       </div>
-      <div className="scroll-area no-scroll" style={{padding:'0 20px 100px'}}>
-        {!search&&cat==='todas'&&(
+
+      <div className="scroll-area no-scroll" style={{padding:'12px 16px 100px'}}>
+        {!search&&cat==='todas'&&minDisc===0&&sortBy==='featured'&&(
           <div style={{marginBottom:16}}>
-            <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:10}}>Tiendas</div>
+            <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:10}}>Distribuidores ADES</div>
             {STORES.map(s=>(
               <div key={s.id} onClick={()=>goStore(s)} style={{display:'flex',alignItems:'center',gap:12,background:'#fff',borderRadius:16,padding:'12px',marginBottom:10,boxShadow:'0 1px 4px rgba(0,0,0,0.06)',cursor:'pointer'}}>
-                <div style={{width:56,height:56,borderRadius:14,background:s.grad,display:'flex',alignItems:'center',justifyContent:'center',fontSize:28,flexShrink:0}}>{s.emoji}</div>
+                <div style={{width:52,height:52,borderRadius:14,background:s.grad,display:'flex',alignItems:'center',justifyContent:'center',fontSize:26,flexShrink:0}}>{s.emoji}</div>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:2}}>{s.name}</div>
-                  <div style={{fontSize:12,color:'#9ca3af',marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.tag}</div>
+                  <div style={{fontSize:14,fontWeight:700,color:'#111827',marginBottom:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.name}</div>
+                  <div style={{fontSize:11,color:'#9ca3af',marginBottom:4,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{s.tag}</div>
                   <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                    <span style={{fontSize:12,color:'#6b7280'}}>⭐ {s.rating}</span>
-                    <span style={{fontSize:12,color:'#6b7280'}}>🕐 {s.delivery}</span>
-                    <span style={{background:'#d1fae5',color:'#065f46',fontSize:11,fontWeight:700,padding:'2px 7px',borderRadius:6}}>-{s.disc}%</span>
+                    <span style={{fontSize:11,color:'#6b7280'}}>⭐ {s.rating}</span>
+                    <span style={{fontSize:11,color:'#6b7280'}}>🕐 {s.delivery}</span>
+                    <span style={{background:'#d1fae5',color:'#065f46',fontSize:10,fontWeight:700,padding:'2px 7px',borderRadius:6}}>-{s.disc}%</span>
                   </div>
                 </div>
                 <div style={{color:'#d1d5db',fontSize:18}}>›</div>
@@ -349,8 +411,9 @@ const ExplorarScreen=({cart,setCart,goStore,goProduct})=>{
             ))}
           </div>
         )}
-        <div style={{fontSize:15,fontWeight:700,color:'#111827',marginBottom:10}}>
-          {search?`${filtered.length} resultado(s)`:cat==='todas'?'Todos los productos':`${cat} (${filtered.length})`}
+        <div style={{fontSize:14,fontWeight:700,color:'#111827',marginBottom:10}}>
+          {isFiltering?`${filtered.length} resultado${filtered.length!==1?'s':''}`:
+           cat==='todas'?'Todos los productos':`${cat} (${filtered.length})`}
         </div>
         <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
           {filtered.map(p=>{
@@ -364,7 +427,7 @@ const ExplorarScreen=({cart,setCart,goStore,goProduct})=>{
                 <div style={{padding:'10px 10px 12px'}}>
                   <div style={{fontSize:12,fontWeight:600,color:'#111827',marginBottom:4,lineHeight:1.3}}>{p.name.length>24?p.name.slice(0,24)+'…':p.name}</div>
                   <div style={{fontSize:14,fontWeight:800,color:'#111827',marginBottom:1}}>{$$(p.price)}<span style={{fontSize:10,fontWeight:500,color:'#9ca3af',marginLeft:4,textDecoration:'line-through'}}>{$$(p.retail)}</span></div>
-                  <div style={{fontSize:11,color:'#059669',fontWeight:600,background:'#d1fae5',borderRadius:6,padding:'3px 6px',display:'inline-block',marginBottom:8}}>Ahorras {$$(p.retail-p.price)}</div>
+                  <div style={{fontSize:11,color:'#059669',fontWeight:600,background:'#d1fae5',borderRadius:6,padding:'3px 6px',display:'inline-block',marginBottom:8}}>Ahorrás {$$(p.retail-p.price)}</div>
                   <button onClick={e=>{e.stopPropagation();addToCart(p);}} style={{
                     width:'100%',padding:'7px 0',borderRadius:10,border:'none',cursor:'pointer',
                     fontSize:12,fontWeight:700,background:inCart?'#10b981':'#0ea5e9',color:'#fff',
@@ -374,7 +437,13 @@ const ExplorarScreen=({cart,setCart,goStore,goProduct})=>{
             );
           })}
         </div>
-        {filtered.length===0&&<div style={{textAlign:'center',padding:'40px 0',color:'#9ca3af'}}>Sin resultados 🔍</div>}
+        {filtered.length===0&&(
+          <div style={{textAlign:'center',padding:'40px 0'}}>
+            <div style={{fontSize:48,marginBottom:12}}>🔍</div>
+            <div style={{fontSize:15,fontWeight:700,color:'#374151',marginBottom:6}}>Sin resultados</div>
+            <div style={{fontSize:13,color:'#9ca3af'}}>Prueba con otros filtros</div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -501,8 +570,8 @@ const PerfilBuyerScreen=()=>{
               <div style={{position:'absolute',bottom:-4,right:-4,background:'#fff',borderRadius:10,padding:'2px 6px',fontSize:16,boxShadow:'0 2px 8px rgba(0,0,0,0.15)'}}>{rank.icon}</div>
             </div>
             <div style={{flex:1}}>
-              <div style={{fontSize:18,fontWeight:900,color:'#fff',marginBottom:2}}>Abarrotes La Conchita</div>
-              <div style={{fontSize:12,color:'rgba(255,255,255,0.8)'}}>conchita@correo.mx · Minorista</div>
+              <div style={{fontSize:18,fontWeight:900,color:'#fff',marginBottom:2}}>Tienda El Progreso</div>
+              <div style={{fontSize:12,color:'rgba(255,255,255,0.8)'}}>progreso@correo.com.sv · Minorista</div>
             </div>
           </div>
         </div>
@@ -661,7 +730,7 @@ const DashboardScreen=({goPage})=>{
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18}}>
           <div>
             <div style={{fontSize:13,color:'#6b7280',fontWeight:500}}>Panel de control</div>
-            <div style={{fontSize:22,fontWeight:800,color:'#111827',letterSpacing:-0.5}}>Grupo Alianza MX</div>
+            <div style={{fontSize:22,fontWeight:800,color:'#111827',letterSpacing:-0.5}}>Diana Distribuciones S.A.</div>
           </div>
           <div style={{width:42,height:42,borderRadius:21,background:'linear-gradient(135deg,#0ea5e9,#6366f1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20}}>🏭</div>
         </div>
@@ -897,8 +966,8 @@ const PerfilDistScreen=()=>(
       <div style={{display:'flex',alignItems:'center',gap:14,marginBottom:20}}>
         <div style={{width:60,height:60,borderRadius:30,background:'linear-gradient(135deg,#0ea5e9,#6366f1)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:28}}>🏭</div>
         <div>
-          <div style={{fontSize:18,fontWeight:800,color:'#111827'}}>Grupo Alianza MX</div>
-          <div style={{fontSize:13,color:'#9ca3af'}}>ventas@grupoalianza.mx</div>
+          <div style={{fontSize:18,fontWeight:800,color:'#111827'}}>Diana Distribuciones S.A.</div>
+          <div style={{fontSize:13,color:'#9ca3af'}}>ventas@diana.com.sv</div>
         </div>
       </div>
 
@@ -1099,7 +1168,7 @@ const ProductSheet=({product,cart,setCart,onClose})=>{
 
           {/* Info extra */}
           <div style={{display:'flex',justifyContent:'center',gap:20,marginTop:14}}>
-            <div style={{fontSize:11,color:'#9ca3af',textAlign:'center'}}>🚚 Entrega {product.dist==='Grupo Alianza MX'?'2-4':'3-5'} hrs</div>
+            <div style={{fontSize:11,color:'#9ca3af',textAlign:'center'}}>🚚 Entrega {product.distId==='d1'?'2-4':'3-5'} hrs</div>
             <div style={{fontSize:11,color:'#9ca3af',textAlign:'center'}}>🔒 Pago seguro</div>
             <div style={{fontSize:11,color:'#9ca3af',textAlign:'center'}}>↩️ Devolución fácil</div>
           </div>
@@ -1130,19 +1199,19 @@ const SuccessOverlay=({onClose})=>(
    CHAT MÓVIL
 ═══════════════════════════════════ */
 const MOCK_MOVIL_CONVS=[
-  {id:'c1',dist_name:'Grupo Alianza MX',company_name:'Grupo Alianza MX',product_name:'Arroz Extra Premium 5kg',last_message:'¿Tienen disponibilidad para la próxima semana?',last_at:'2024-04-24T10:30:00',unread_buyer:2},
-  {id:'c2',dist_name:'Distribuidora del Norte',company_name:'Distribuidora del Norte',product_name:'Frijol Negro 1kg',last_message:'Claro, le enviamos cotización.',last_at:'2024-04-23T14:00:00',unread_buyer:0},
-  {id:'c3',dist_name:'Alimentos Centrales SA',company_name:'Alimentos Centrales SA',product_name:'Café Molido 1kg',last_message:'Mínimo 6 bolsas por pedido.',last_at:'2024-04-22T09:15:00',unread_buyer:1},
+  {id:'c1',dist_name:'Diana Distribuciones S.A.',company_name:'Diana Distribuciones S.A.',product_name:'Arroz de Primera 25 lbs',last_message:'¿Tienen disponibilidad para la próxima semana?',last_at:'2024-04-24T10:30:00',unread_buyer:2},
+  {id:'c2',dist_name:'Interamérica Alimentos S.A.',company_name:'Interamérica Alimentos S.A.',product_name:'Frijoles Rojos de Seda 1 lb',last_message:'Claro, le enviamos cotización.',last_at:'2024-04-23T14:00:00',unread_buyer:0},
+  {id:'c3',dist_name:'Distribuidora APS S.A.',company_name:'Distribuidora APS S.A.',product_name:'Café Grano de Oro Molido 250g',last_message:'Mínimo 12 bolsas por pedido.',last_at:'2024-04-22T09:15:00',unread_buyer:1},
 ];
 const MOCK_MOVIL_MSGS={
   c1:[
     {id:'m1',sender_role:'buyer',body:'Hola, vi su catálogo. ¿Manejan precios especiales para pedidos frecuentes?',created_at:'2024-04-24T09:00:00'},
-    {id:'m2',sender_role:'distributor',sender_name:'Grupo Alianza MX',body:'¡Hola! Claro. Para clientes frecuentes tenemos hasta 5% adicional en pedidos mensuales.',created_at:'2024-04-24T09:15:00'},
+    {id:'m2',sender_role:'distributor',sender_name:'Diana Distribuciones S.A.',body:'¡Hola! Claro. Para clientes frecuentes tenemos hasta 5% adicional en pedidos mensuales.',created_at:'2024-04-24T09:15:00'},
     {id:'m3',sender_role:'buyer',body:'¿Tienen disponibilidad para la próxima semana?',created_at:'2024-04-24T10:30:00'},
   ],
   c2:[
-    {id:'m4',sender_role:'buyer',body:'Buenas, necesito 200 unidades de Frijol Negro 1kg.',created_at:'2024-04-23T13:00:00'},
-    {id:'m5',sender_role:'distributor',sender_name:'Distribuidora del Norte',body:'Claro, le enviamos cotización.',created_at:'2024-04-23T14:00:00'},
+    {id:'m4',sender_role:'buyer',body:'Buenas, necesito 200 bolsas de Frijoles Rojos de Seda 1 lb.',created_at:'2024-04-23T13:00:00'},
+    {id:'m5',sender_role:'distributor',sender_name:'Interamérica Alimentos S.A.',body:'Claro, le enviamos cotización.',created_at:'2024-04-23T14:00:00'},
   ],
   c3:[
     {id:'m6',sender_role:'buyer',body:'¿Cuál es el pedido mínimo del café?',created_at:'2024-04-22T09:00:00'},

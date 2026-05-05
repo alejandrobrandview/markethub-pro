@@ -41,34 +41,34 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    /* ── MOCK DATA ── */
+    /* ── MOCK DATA — El Salvador (inspirado en socios ADES) ── */
     const PRODUCTS = [
-      { id:1, name:'Arroz Extra Premium 5kg', sku:'ARR-001', cat:'Granos', price:89, retail:120, stock:1200, minOrder:10, unit:'costal', dist:'Grupo Alianza MX', distId:'d1', emoji:'🌾', featured:true, disc:26, rating:4.8, reviews:142 },
-      { id:2, name:'Aceite Vegetal 1L', sku:'ACE-002', cat:'Aceites', price:28, retail:42, stock:800, minOrder:24, unit:'botella', dist:'Grupo Alianza MX', distId:'d1', emoji:'🫙', featured:true, disc:33, rating:4.6, reviews:98 },
-      { id:3, name:'Frijol Negro 1kg', sku:'FRJ-003', cat:'Granos', price:32, retail:52, stock:2000, minOrder:20, unit:'bolsa', dist:'Distribuidora del Norte', distId:'d2', emoji:'🫘', featured:false, disc:38, rating:4.9, reviews:215 },
-      { id:4, name:'Azúcar Estándar 50kg', sku:'AZU-004', cat:'Endulzantes', price:420, retail:560, stock:300, minOrder:5, unit:'costal', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍬', featured:false, disc:25, rating:4.5, reviews:67 },
-      { id:5, name:'Harina de Trigo 25kg', sku:'HAR-005', cat:'Harinas', price:195, retail:265, stock:600, minOrder:4, unit:'saco', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🥣', featured:true, disc:26, rating:4.7, reviews:88 },
-      { id:6, name:'Sal de Mesa 1kg', sku:'SAL-006', cat:'Condimentos', price:8, retail:14, stock:5000, minOrder:48, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🧂', featured:false, disc:43, rating:4.4, reviews:203 },
-      { id:7, name:'Leche Entera UHT 1L', sku:'LEC-007', cat:'Lácteos', price:19, retail:28, stock:3000, minOrder:24, unit:'litro', dist:'Grupo Alianza MX', distId:'d1', emoji:'🥛', featured:true, disc:32, rating:4.7, reviews:176 },
-      { id:8, name:'Tomate Enlatado 800g', sku:'TOM-008', cat:'Conservas', price:22, retail:35, stock:1500, minOrder:12, unit:'lata', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍅', featured:false, disc:37, rating:4.6, reviews:94 },
-      { id:9, name:'Avena Premium 1kg', sku:'AVE-009', cat:'Cereales', price:35, retail:55, stock:900, minOrder:12, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'🌿', featured:false, disc:36, rating:4.8, reviews:112 },
-      { id:10, name:'Mayonesa Industrial 4kg', sku:'MAY-010', cat:'Condimentos', price:95, retail:145, stock:400, minOrder:6, unit:'cubeta', dist:'Grupo Alianza MX', distId:'d1', emoji:'🥣', featured:true, disc:34, rating:4.5, reviews:78 },
-      { id:11, name:'Pasta Spaghetti 5kg', sku:'PAS-011', cat:'Pastas', price:58, retail:85, stock:700, minOrder:10, unit:'paquete', dist:'Distribuidora del Norte', distId:'d2', emoji:'🍝', featured:false, disc:32, rating:4.7, reviews:134 },
-      { id:12, name:'Café Molido 1kg', sku:'CAF-012', cat:'Bebidas', price:145, retail:210, stock:250, minOrder:6, unit:'bolsa', dist:'Alimentos Centrales SA', distId:'d3', emoji:'☕', featured:true, disc:31, rating:4.9, reviews:256 },
+      { id:1, name:'Arroz de Primera 25 lbs', sku:'ARR-001', cat:'Granos', price:12.50, retail:17.00, stock:1200, minOrder:10, unit:'bolsa', dist:'Diana Distribuciones S.A.', distId:'d1', emoji:'🌾', featured:true, disc:26, rating:4.8, reviews:142 },
+      { id:2, name:'Aceite Vegetal Corona 1L', sku:'ACE-002', cat:'Aceites', price:2.80, retail:3.90, stock:800, minOrder:24, unit:'botella', dist:'Diana Distribuciones S.A.', distId:'d1', emoji:'🫙', featured:true, disc:28, rating:4.6, reviews:98 },
+      { id:3, name:'Frijoles Rojos de Seda 1 lb', sku:'FRJ-003', cat:'Granos', price:1.45, retail:2.20, stock:2000, minOrder:48, unit:'bolsa', dist:'Interamérica Alimentos S.A.', distId:'d2', emoji:'🫘', featured:true, disc:34, rating:4.9, reviews:215 },
+      { id:4, name:'Azúcar San Francisco 50 lbs', sku:'AZU-004', cat:'Endulzantes', price:24.50, retail:32.00, stock:300, minOrder:5, unit:'costal', dist:'Interamérica Alimentos S.A.', distId:'d2', emoji:'🍬', featured:false, disc:23, rating:4.5, reviews:67 },
+      { id:5, name:'Harina de Maíz Nixtamalizada 1kg', sku:'HAR-005', cat:'Harinas', price:1.20, retail:1.65, stock:600, minOrder:24, unit:'bolsa', dist:'Distribuidora APS S.A.', distId:'d3', emoji:'🌽', featured:true, disc:27, rating:4.7, reviews:88 },
+      { id:6, name:'Sal Yodada 1 lb', sku:'SAL-006', cat:'Condimentos', price:0.45, retail:0.75, stock:5000, minOrder:96, unit:'bolsa', dist:'Distribuidora APS S.A.', distId:'d3', emoji:'🧂', featured:false, disc:40, rating:4.4, reviews:203 },
+      { id:7, name:'Leche Entera Pasteurizada 1L', sku:'LEC-007', cat:'Lácteos', price:1.10, retail:1.55, stock:3000, minOrder:24, unit:'litro', dist:'Diana Distribuciones S.A.', distId:'d1', emoji:'🥛', featured:true, disc:29, rating:4.7, reviews:176 },
+      { id:8, name:'Crema Ácida Tres Estrellas 500ml', sku:'CRE-008', cat:'Lácteos', price:1.80, retail:2.60, stock:1500, minOrder:12, unit:'bolsa', dist:'Interamérica Alimentos S.A.', distId:'d2', emoji:'🍦', featured:false, disc:31, rating:4.6, reviews:94 },
+      { id:9, name:'Galletas Soda Diana 600g', sku:'GAL-009', cat:'Snacks', price:1.95, retail:2.80, stock:900, minOrder:24, unit:'paquete', dist:'Diana Distribuciones S.A.', distId:'d1', emoji:'🍪', featured:true, disc:30, rating:4.8, reviews:312 },
+      { id:10, name:'Mortadela de Pollo 1kg', sku:'MOR-010', cat:'Embutidos', price:4.20, retail:6.00, stock:400, minOrder:12, unit:'unidad', dist:'Distribuidora APS S.A.', distId:'d3', emoji:'🥩', featured:false, disc:30, rating:4.5, reviews:78 },
+      { id:11, name:'Detergente en Polvo 5kg', sku:'DET-011', cat:'Limpieza', price:8.50, retail:12.00, stock:700, minOrder:6, unit:'bolsa', dist:'Interamérica Alimentos S.A.', distId:'d2', emoji:'🧺', featured:false, disc:29, rating:4.7, reviews:134 },
+      { id:12, name:'Café Grano de Oro Molido 250g', sku:'CAF-012', cat:'Bebidas', price:3.20, retail:4.75, stock:250, minOrder:12, unit:'bolsa', dist:'Distribuidora APS S.A.', distId:'d3', emoji:'☕', featured:true, disc:33, rating:4.9, reviews:256 },
     ];
 
     const ORDERS = [
-      { id:'ORD-001', buyer:'Abarrotes La Conchita', date:'2024-04-15', status:'entregado', total:2692, comm:67.3 },
-      { id:'ORD-002', buyer:'Supermercado Familiar', date:'2024-04-18', status:'en_camino', total:1452, comm:36.3 },
-      { id:'ORD-003', buyer:'Restaurante El Buen Sabor', date:'2024-04-20', status:'pendiente', total:1668, comm:41.7 },
-      { id:'ORD-004', buyer:'Tienda Don Pepe', date:'2024-04-22', status:'confirmado', total:2048, comm:51.2 },
-      { id:'ORD-005', buyer:'Cocina Central Norte', date:'2024-04-24', status:'pendiente', total:2580, comm:64.5 },
+      { id:'ORD-001', buyer:'Tienda El Progreso', date:'2024-04-15', status:'entregado', total:312.50, comm:7.81 },
+      { id:'ORD-002', buyer:'Supermercado La Colonia', date:'2024-04-18', status:'en_camino', total:189.20, comm:4.73 },
+      { id:'ORD-003', buyer:'Pupusería Doña Carmen', date:'2024-04-20', status:'pendiente', total:145.80, comm:3.65 },
+      { id:'ORD-004', buyer:'Abarrotes San Jacinto', date:'2024-04-22', status:'confirmado', total:278.40, comm:6.96 },
+      { id:'ORD-005', buyer:'Comedor La Choza', date:'2024-04-24', status:'pendiente', total:210.60, comm:5.27 },
     ];
 
     const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun'];
-    const SALES  = [48200,52100,61800,58400,72300,68900];
+    const SALES  = [4820,5210,6180,5840,7230,6890];
     const ORDERS_CNT = [32,38,45,41,54,49];
-    const SAVINGS_DATA = [4200,5100,6800,5400,7200,6100];
+    const SAVINGS_DATA = [420,510,680,540,720,610];
 
     /* ── HELPERS ── */
     const $$ = (n) => '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
@@ -262,7 +262,7 @@
           {/* HERO */}
           <div className="max-w-7xl mx-auto px-8 py-16 text-center">
             <div className="inline-flex items-center gap-2 text-sky-300 text-xs font-semibold px-4 py-2 rounded-full mb-6 border border-sky-700/50 bg-sky-900/40">
-              ✨ Plataforma #1 B2B de abarrotes y alimentos en México
+              ✨ Plataforma #1 B2B de abarrotes y alimentos en El Salvador
             </div>
             <h1 className="text-5xl font-extrabold text-white leading-tight mb-5 max-w-3xl mx-auto">
               Conecta distribuidores con{' '}
@@ -284,7 +284,7 @@
 
             {/* STATS */}
             <div className="grid grid-cols-3 gap-8 mt-20 max-w-xl mx-auto">
-              {[['🏪','1,200+','Distribuidores activos'],['🛒','15,000+','Compradores registrados'],['💰','40%','Ahorro promedio']].map(([icon,val,lab])=>(
+              {[['🏪','85+','Distribuidores activos'],['🛒','1,200+','Compradores registrados'],['💰','35%','Ahorro promedio']].map(([icon,val,lab])=>(
                 <div key={lab}>
                   <div className="text-3xl mb-2">{icon}</div>
                   <div className="text-3xl font-extrabold text-white">{val}</div>
@@ -339,7 +339,7 @@
           </div>
 
           <div className="text-center py-8 text-slate-600 text-sm border-t border-white/5">
-            © 2024 MarketHub Pro · Hecho en México 🇲🇽
+            © 2024 MarketHub Pro · Hecho en El Salvador 🇸🇻
           </div>
 
           {/* MODALS */}
@@ -461,7 +461,7 @@
     ═══════════════════════════════════════════ */
     const DistDash = ({ setPage }) => (
       <div className="fade-in">
-        <TB title="Dashboard" sub="Bienvenido, Grupo Alianza MX" />
+        <TB title="Dashboard" sub="Bienvenido, Diana Distribuciones S.A." />
         <div className="grid grid-cols-4 gap-4 mb-6">
           <KPI icon="💰" label="Ventas este mes" value={$$(72300)} sub="+18% vs mes anterior" color="green" />
           <KPI icon="📋" label="Pedidos activos" value="54" sub="8 pendientes" color="blue" />
@@ -1100,21 +1100,21 @@
        CHAT / MENSAJERÍA
     ═══════════════════════════════════════════ */
     const MOCK_CONVS = [
-      { id:'c1', buyer_name:'Abarrotes La Conchita', dist_name:'Grupo Alianza MX', company_name:'Grupo Alianza MX', product_name:'Arroz Extra Premium 5kg', last_message:'¿Tienen disponibilidad para la próxima semana?', last_at:'2024-04-24T10:30:00', unread_dist:2, unread_buyer:0, buyer_id:'b1', distributor_id:'d1' },
-      { id:'c2', buyer_name:'Supermercado Familiar', dist_name:'Grupo Alianza MX', company_name:'Grupo Alianza MX', product_name:'Aceite Vegetal 1L', last_message:'Perfecto, hacemos el pedido entonces.', last_at:'2024-04-23T16:20:00', unread_dist:0, unread_buyer:0, buyer_id:'b2', distributor_id:'d1' },
-      { id:'c3', buyer_name:'Restaurante El Buen Sabor', dist_name:'Distribuidora del Norte', company_name:'Distribuidora del Norte', product_name:'Frijol Negro 1kg', last_message:'¿Hacen envío a Guadalajara?', last_at:'2024-04-22T09:15:00', unread_dist:1, unread_buyer:0, buyer_id:'b3', distributor_id:'d2' },
+      { id:'c1', buyer_name:'Tienda El Progreso', dist_name:'Diana Distribuciones S.A.', company_name:'Diana Distribuciones S.A.', product_name:'Arroz de Primera 25 lbs', last_message:'¿Tienen disponibilidad para la próxima semana?', last_at:'2024-04-24T10:30:00', unread_dist:2, unread_buyer:0, buyer_id:'b1', distributor_id:'d1' },
+      { id:'c2', buyer_name:'Supermercado La Colonia', dist_name:'Diana Distribuciones S.A.', company_name:'Diana Distribuciones S.A.', product_name:'Aceite Vegetal Corona 1L', last_message:'Perfecto, hacemos el pedido entonces.', last_at:'2024-04-23T16:20:00', unread_dist:0, unread_buyer:0, buyer_id:'b2', distributor_id:'d1' },
+      { id:'c3', buyer_name:'Pupusería Doña Carmen', dist_name:'Interamérica Alimentos S.A.', company_name:'Interamérica Alimentos S.A.', product_name:'Frijoles Rojos de Seda 1 lb', last_message:'¿Hacen envío a Santa Ana?', last_at:'2024-04-22T09:15:00', unread_dist:1, unread_buyer:0, buyer_id:'b3', distributor_id:'d2' },
     ];
 
     const MOCK_MSGS = {
       c1: [
-        { id:'m1', sender_id:'b1', sender_name:'Abarrotes La Conchita', sender_role:'buyer', body:'Hola, vi su catálogo en MarketHub. ¿Manejan precios especiales para pedidos frecuentes?', created_at:'2024-04-24T09:00:00' },
-        { id:'m2', sender_id:'d1', sender_name:'Grupo Alianza MX', sender_role:'distributor', body:'¡Hola! Claro que sí. Para clientes frecuentes tenemos hasta 5% de descuento adicional en pedidos mensuales. ¿Qué productos le interesan?', created_at:'2024-04-24T09:15:00' },
-        { id:'m3', sender_id:'b1', sender_name:'Abarrotes La Conchita', sender_role:'buyer', body:'Principalmente arroz y aceite. ¿Tienen disponibilidad para la próxima semana?', created_at:'2024-04-24T10:30:00' },
+        { id:'m1', sender_id:'b1', sender_name:'Tienda El Progreso', sender_role:'buyer', body:'Hola, vi su catálogo en MarketHub. ¿Manejan precios especiales para pedidos frecuentes?', created_at:'2024-04-24T09:00:00' },
+        { id:'m2', sender_id:'d1', sender_name:'Diana Distribuciones S.A.', sender_role:'distributor', body:'¡Hola! Claro que sí. Para clientes frecuentes tenemos hasta 5% de descuento adicional en pedidos mensuales. ¿Qué productos le interesan?', created_at:'2024-04-24T09:15:00' },
+        { id:'m3', sender_id:'b1', sender_name:'Tienda El Progreso', sender_role:'buyer', body:'Principalmente arroz y frijoles. ¿Tienen disponibilidad para la próxima semana?', created_at:'2024-04-24T10:30:00' },
       ],
       c2: [
-        { id:'m4', sender_id:'b2', sender_name:'Supermercado Familiar', sender_role:'buyer', body:'Buenos días. Necesito 200 cajas de Aceite Vegetal 1L. ¿Cuánto tardan en entregar?', created_at:'2024-04-23T14:00:00' },
-        { id:'m5', sender_id:'d1', sender_name:'Grupo Alianza MX', sender_role:'distributor', body:'¡Buenos días! Tenemos stock disponible. El tiempo de entrega es de 2 a 4 horas dentro de CDMX.', created_at:'2024-04-23T14:30:00' },
-        { id:'m6', sender_id:'b2', sender_name:'Supermercado Familiar', sender_role:'buyer', body:'Perfecto, hacemos el pedido entonces.', created_at:'2024-04-23T16:20:00' },
+        { id:'m4', sender_id:'b2', sender_name:'Supermercado La Colonia', sender_role:'buyer', body:'Buenos días. Necesito 200 botellas de Aceite Vegetal Corona 1L. ¿Cuánto tardan en entregar?', created_at:'2024-04-23T14:00:00' },
+        { id:'m5', sender_id:'d1', sender_name:'Diana Distribuciones S.A.', sender_role:'distributor', body:'¡Buenos días! Tenemos stock disponible. El tiempo de entrega es de 2 a 4 horas dentro de San Salvador.', created_at:'2024-04-23T14:30:00' },
+        { id:'m6', sender_id:'b2', sender_name:'Supermercado La Colonia', sender_role:'buyer', body:'Perfecto, hacemos el pedido entonces.', created_at:'2024-04-23T16:20:00' },
       ],
       c3: [
         { id:'m7', sender_id:'b3', sender_name:'Restaurante El Buen Sabor', sender_role:'buyer', body:'¿Hacen envío a Guadalajara?', created_at:'2024-04-22T09:15:00' },
@@ -1176,7 +1176,7 @@
         setInput('');
         setSending(true);
         // Optimista: agregar mensaje de inmediato
-        const optimistic = { id: 'tmp'+Date.now(), sender_id:'me', sender_name: role==='distributor'?'Grupo Alianza MX':'Abarrotes La Conchita', sender_role: role, body, created_at: new Date().toISOString() };
+        const optimistic = { id: 'tmp'+Date.now(), sender_id:'me', sender_name: role==='distributor'?'Diana Distribuciones S.A.':'Tienda El Progreso', sender_role: role, body, created_at: new Date().toISOString() };
         setMsgs(prev => [...prev, optimistic]);
         try {
           const token = localStorage.getItem('mhToken');
@@ -1325,26 +1325,26 @@
 
     /* Datos de tiendas (distribuidores) */
     const STORES = [
-      { id:'d1', name:'Grupo Alianza MX', tag:'Granos · Lácteos · Aceites', rating:4.8, reviews:142, minOrder:500, delivery:'2-4 hrs', featured:true,
-        gradient:'linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%)', emoji:'🏭', badge:'⭐ Destacado', disc:33 },
-      { id:'d2', name:'Distribuidora del Norte', tag:'Granos · Conservas · Pastas', rating:4.9, reviews:215, minOrder:800, delivery:'3-5 hrs', featured:false,
-        gradient:'linear-gradient(135deg,#10b981 0%,#0891b2 100%)', emoji:'🚛', badge:'🔥 Top ventas', disc:38 },
-      { id:'d3', name:'Alimentos Centrales SA', tag:'Harinas · Condimentos · Bebidas', rating:4.7, reviews:88, minOrder:600, delivery:'2-3 hrs', featured:false,
-        gradient:'linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)', emoji:'🏪', badge:'🆕 Nuevo', disc:43 },
+      { id:'d1', name:'Diana Distribuciones S.A.', tag:'Snacks · Lácteos · Granos · Aceites', rating:4.8, reviews:142, minOrder:50, delivery:'2-4 hrs', featured:true,
+        gradient:'linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%)', emoji:'🏭', badge:'⭐ Destacado', disc:30 },
+      { id:'d2', name:'Interamérica Alimentos S.A.', tag:'Granos · Lácteos · Limpieza', rating:4.9, reviews:215, minOrder:80, delivery:'3-5 hrs', featured:false,
+        gradient:'linear-gradient(135deg,#10b981 0%,#0891b2 100%)', emoji:'🚛', badge:'🔥 Top ventas', disc:34 },
+      { id:'d3', name:'Distribuidora APS S.A.', tag:'Harinas · Embutidos · Café · Condimentos', rating:4.7, reviews:88, minOrder:60, delivery:'2-3 hrs', featured:false,
+        gradient:'linear-gradient(135deg,#f59e0b 0%,#ef4444 100%)', emoji:'🏪', badge:'🆕 Nuevo', disc:33 },
     ];
 
     const CATS = [
-      { id:'todas',  label:'Todo',         emoji:'🏠' },
-      { id:'Granos', label:'Granos',        emoji:'🌾' },
-      { id:'Aceites',label:'Aceites',       emoji:'🫙' },
-      { id:'Lácteos',label:'Lácteos',       emoji:'🥛' },
-      { id:'Harinas',label:'Harinas',       emoji:'🥣' },
-      { id:'Condimentos',label:'Condimentos',emoji:'🧂'},
-      { id:'Conservas',label:'Conservas',   emoji:'🍅' },
-      { id:'Cereales',label:'Cereales',     emoji:'🌿' },
-      { id:'Pastas',  label:'Pastas',       emoji:'🍝' },
-      { id:'Bebidas', label:'Bebidas',      emoji:'☕' },
-      { id:'Endulzantes',label:'Endulzantes',emoji:'🍬'},
+      { id:'todas',      label:'Todo',         emoji:'🏠' },
+      { id:'Granos',     label:'Granos',       emoji:'🌾' },
+      { id:'Aceites',    label:'Aceites',      emoji:'🫙' },
+      { id:'Lácteos',    label:'Lácteos',      emoji:'🥛' },
+      { id:'Harinas',    label:'Harinas',      emoji:'🌽' },
+      { id:'Condimentos',label:'Condimentos',  emoji:'🧂' },
+      { id:'Snacks',     label:'Snacks',       emoji:'🍪' },
+      { id:'Embutidos',  label:'Embutidos',    emoji:'🥩' },
+      { id:'Bebidas',    label:'Bebidas',      emoji:'☕' },
+      { id:'Endulzantes',label:'Endulzantes',  emoji:'🍬' },
+      { id:'Limpieza',   label:'Limpieza',     emoji:'🧺' },
     ];
 
     /* ── Tarjeta de producto grande (estilo Rappi) ── */
@@ -1456,13 +1456,17 @@
       );
     };
 
-    /* ── Catálogo principal estilo Rappi ── */
+    /* ── Catálogo principal con Búsqueda y Filtros Avanzados ── */
     const Catalog = ({ cart, setCart }) => {
-      const [search, setSearch] = useState('');
+      const [search, setSearch]       = useState('');
       const [activeCat, setActiveCat] = useState('todas');
       const [activeStore, setActiveStore] = useState(null);
+      const [showFilters, setShowFilters] = useState(false);
+      const [sortBy, setSortBy]       = useState('featured'); // featured | price_asc | price_desc | disc | rating
+      const [filterDist, setFilterDist] = useState('todas');  // todas | d1 | d2 | d3
+      const [minDisc, setMinDisc]     = useState(0);          // 0 | 20 | 30 | 40
+      const [priceMax, setPriceMax]   = useState(999);        // slider max price
 
-      /* Si hay una tienda activa, mostrar su detalle */
       if (activeStore) {
         return <StoreDetail store={activeStore} cart={cart} setCart={setCart} onBack={() => setActiveStore(null)} />;
       }
@@ -1472,51 +1476,137 @@
         return ex ? prev.map(i => i.id === p.id ? {...i, qty: i.qty + p.minOrder} : i) : [...prev, {...p, qty: p.minOrder}];
       });
 
-      /* Productos filtrados para la sección de búsqueda */
-      const searchResults = search.length > 1
-        ? PRODUCTS.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.dist.toLowerCase().includes(search.toLowerCase()))
-        : [];
+      const isFiltering = search.length > 0 || activeCat !== 'todas' || filterDist !== 'todas' || minDisc > 0 || priceMax < 999 || sortBy !== 'featured';
+      const activeFiltersCount = (activeCat !== 'todas' ? 1 : 0) + (filterDist !== 'todas' ? 1 : 0) + (minDisc > 0 ? 1 : 0) + (priceMax < 999 ? 1 : 0);
 
-      /* Productos por categoría activa */
-      const catProducts = activeCat === 'todas'
-        ? PRODUCTS.filter(p => p.featured)
-        : PRODUCTS.filter(p => p.cat === activeCat);
+      /* Filtrado y ordenamiento combinado */
+      const filteredProducts = useMemo(() => {
+        let list = PRODUCTS.filter(p => {
+          const matchSearch = search.length < 2 || p.name.toLowerCase().includes(search.toLowerCase()) || p.dist.toLowerCase().includes(search.toLowerCase()) || p.cat.toLowerCase().includes(search.toLowerCase());
+          const matchCat    = activeCat === 'todas' || p.cat === activeCat;
+          const matchDist   = filterDist === 'todas' || p.distId === filterDist;
+          const matchDisc   = p.disc >= minDisc;
+          const matchPrice  = p.price <= priceMax;
+          return matchSearch && matchCat && matchDist && matchDisc && matchPrice;
+        });
+        switch(sortBy) {
+          case 'price_asc':  return list.sort((a,b) => a.price - b.price);
+          case 'price_desc': return list.sort((a,b) => b.price - a.price);
+          case 'disc':       return list.sort((a,b) => b.disc - a.disc);
+          case 'rating':     return list.sort((a,b) => b.rating - a.rating);
+          default:           return list.sort((a,b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+        }
+      }, [search, activeCat, filterDist, minDisc, priceMax, sortBy]);
 
-      /* Ofertas del día: top 6 por mayor descuento */
-      const deals = [...PRODUCTS].sort((a,b) => b.disc - a.disc).slice(0, 6);
+      const resetFilters = () => { setActiveCat('todas'); setFilterDist('todas'); setMinDisc(0); setPriceMax(999); setSortBy('featured'); setSearch(''); };
 
       return (
         <div className="fade-in -m-8">
-          {/* ── Barra de búsqueda sticky ── */}
+          {/* ── Barra de búsqueda sticky con filtros ── */}
           <div className="sticky top-0 z-30 bg-white border-b border-slate-100 px-6 py-3 shadow-sm">
-            <div className="flex items-center gap-3 max-w-3xl">
+            <div className="flex items-center gap-3">
               <div className="relative flex-1">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-base">🔍</span>
                 <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Buscar productos o distribuidores..."
+                  placeholder="Buscar productos, distribuidores o categorías..."
                   className="w-full bg-slate-100 rounded-xl pl-9 pr-4 py-2.5 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:bg-white transition" />
-                {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">✕</button>}
+                {search && <button onClick={() => setSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-lg">✕</button>}
               </div>
+              {/* Botón filtros */}
+              <button onClick={() => setShowFilters(f => !f)}
+                className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all ${showFilters ? 'bg-sky-500 text-white border-sky-500' : 'bg-white border-slate-200 text-slate-700 hover:border-sky-400'}`}>
+                <span>⚙️</span> Filtros
+                {activeFiltersCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold">{activeFiltersCount}</span>
+                )}
+              </button>
+              {/* Selector de orden */}
+              <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                className="border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-sky-400 cursor-pointer">
+                <option value="featured">⭐ Destacados</option>
+                <option value="disc">🔥 Mayor descuento</option>
+                <option value="rating">⭐ Mejor rating</option>
+                <option value="price_asc">💲 Precio: menor a mayor</option>
+                <option value="price_desc">💲 Precio: mayor a menor</option>
+              </select>
             </div>
+
+            {/* ── Panel de filtros desplegable ── */}
+            {showFilters && (
+              <div className="mt-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap gap-6 items-start fade-in">
+                {/* Filtro distribuidor */}
+                <div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Distribuidor</div>
+                  <div className="flex gap-2 flex-wrap">
+                    {[{id:'todas',label:'Todos'},{id:'d1',label:'Diana Dist.'},{id:'d2',label:'Interamérica'},{id:'d3',label:'APS'}].map(d=>(
+                      <button key={d.id} onClick={()=>setFilterDist(d.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${filterDist===d.id?'bg-sky-500 text-white border-sky-500':'bg-white text-slate-600 border-slate-200 hover:border-sky-400'}`}>
+                        {d.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Filtro descuento mínimo */}
+                <div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Descuento mínimo</div>
+                  <div className="flex gap-2">
+                    {[0, 20, 25, 30].map(d => (
+                      <button key={d} onClick={() => setMinDisc(d)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${minDisc===d?'bg-sky-500 text-white border-sky-500':'bg-white text-slate-600 border-slate-200 hover:border-sky-400'}`}>
+                        {d === 0 ? 'Todos' : `${d}%+`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Filtro precio máximo */}
+                <div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">
+                    Precio máx: <span className="text-sky-600">{priceMax < 999 ? `$${priceMax}` : 'Sin límite'}</span>
+                  </div>
+                  <input type="range" min="1" max="999" step="1" value={priceMax}
+                    onChange={e => setPriceMax(Number(e.target.value))}
+                    className="w-40 accent-sky-500" />
+                </div>
+
+                {/* Botón limpiar */}
+                {(activeFiltersCount > 0) && (
+                  <div className="flex items-end">
+                    <button onClick={resetFilters}
+                      className="px-4 py-1.5 rounded-lg text-xs font-semibold border border-red-200 text-red-500 hover:bg-red-50 transition-all">
+                      ✕ Limpiar filtros
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="px-6 py-5">
 
-            {/* ── RESULTADOS DE BÚSQUEDA ── */}
-            {search.length > 1 ? (
+            {/* ── RESULTADOS FILTRADOS (cuando hay búsqueda o filtros activos) ── */}
+            {isFiltering ? (
               <div>
-                <h2 className="text-lg font-bold text-slate-800 mb-4">
-                  {searchResults.length > 0 ? `${searchResults.length} resultados para "${search}"` : `Sin resultados para "${search}"`}
-                </h2>
-                <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {searchResults.map(p => (
-                    <RappiCard key={p.id} p={p} inCart={cart.some(i => i.id === p.id)} onAdd={addToCart} />
-                  ))}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-slate-800">
+                    {filteredProducts.length > 0 ? `${filteredProducts.length} producto${filteredProducts.length!==1?'s':''} encontrado${filteredProducts.length!==1?'s':''}` : 'Sin resultados'}
+                    {search.length > 1 && <span className="font-normal text-slate-400"> para "{search}"</span>}
+                  </h2>
+                  <button onClick={resetFilters} className="text-xs text-sky-500 hover:text-sky-700 font-medium">Ver todo</button>
                 </div>
-                {searchResults.length === 0 && (
-                  <div className="text-center py-20">
+                {filteredProducts.length > 0 ? (
+                  <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {filteredProducts.map(p => (
+                      <RappiCard key={p.id} p={p} inCart={cart.some(i => i.id === p.id)} onAdd={addToCart} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-24">
                     <div className="text-6xl mb-4">🔍</div>
-                    <p className="text-slate-400">Prueba con otro término</p>
+                    <p className="text-slate-700 font-semibold mb-1">No encontramos productos</p>
+                    <p className="text-slate-400 text-sm mb-6">Intenta con otros filtros o términos de búsqueda</p>
+                    <Btn v="outline" onClick={resetFilters}>Limpiar filtros</Btn>
                   </div>
                 )}
               </div>
@@ -1524,15 +1614,14 @@
               <>
                 {/* ── HERO BANNER ── */}
                 <div className="rounded-2xl overflow-hidden mb-6 relative" style={{height:200, background:'linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0284c7 100%)'}}>
-                  {/* Fondo decorativo */}
-                  <div className="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-20 select-none">🌾</div>
+                  <div className="absolute right-8 top-1/2 -translate-y-1/2 text-9xl opacity-20 select-none">🫘</div>
                   <div className="absolute inset-0 flex flex-col justify-center px-8">
                     <div className="inline-flex items-center gap-2 bg-white/10 text-sky-300 text-xs font-semibold px-3 py-1 rounded-full mb-3 w-fit border border-white/20">
                       ⚡ Oferta de la semana
                     </div>
-                    <h2 className="text-2xl font-extrabold text-white mb-1">Hasta 43% OFF</h2>
-                    <p className="text-sky-200 text-sm mb-4">en toda la línea de condimentos y especias</p>
-                    <button onClick={() => setActiveCat('Condimentos')}
+                    <h2 className="text-2xl font-extrabold text-white mb-1">Hasta 40% OFF</h2>
+                    <p className="text-sky-200 text-sm mb-4">en frijoles rojos de seda y granos básicos</p>
+                    <button onClick={() => { setActiveCat('Granos'); setShowFilters(false); }}
                       className="bg-sky-500 hover:bg-sky-400 text-white font-bold text-sm px-5 py-2.5 rounded-xl w-fit transition active:scale-95">
                       Ver oferta →
                     </button>
@@ -1543,7 +1632,7 @@
                 <div className="mb-6">
                   <div className="flex gap-3 overflow-x-auto pb-2" style={{scrollbarWidth:'none'}}>
                     {CATS.map(c => (
-                      <button key={c.id} onClick={() => setActiveCat(c.id)}
+                      <button key={c.id} onClick={() => { setActiveCat(c.id); setShowFilters(false); }}
                         className={`flex-shrink-0 flex flex-col items-center gap-1.5 px-4 py-3 rounded-2xl transition-all duration-150 min-w-16 ${activeCat === c.id ? 'bg-sky-500 text-white shadow-md scale-105' : 'bg-white text-slate-700 border border-slate-200 hover:border-sky-300 hover:bg-sky-50'}`}>
                         <span className="text-2xl">{c.emoji}</span>
                         <span className="text-xs font-semibold">{c.label}</span>
@@ -1555,7 +1644,7 @@
                 {/* ── DISTRIBUIDORES DESTACADOS ── */}
                 <div className="mb-7">
                   <div className="flex items-center justify-between mb-3">
-                    <h2 className="text-lg font-extrabold text-slate-800">Distribuidores</h2>
+                    <h2 className="text-lg font-extrabold text-slate-800">Distribuidores ADES</h2>
                     <span className="text-xs text-slate-400">{STORES.length} disponibles</span>
                   </div>
                   <div className="grid grid-cols-3 gap-4">
@@ -1869,7 +1958,7 @@
               {ORDERS.map(o=>(
                 <tr key={o.id} className="border-b border-slate-50 hover:bg-slate-50">
                   <td className="px-4 py-3 font-mono text-xs text-slate-600">{o.id}</td>
-                  <td className="px-4 py-3 font-medium text-slate-700">Grupo Alianza MX</td>
+                  <td className="px-4 py-3 font-medium text-slate-700">Diana Distribuciones S.A.</td>
                   <td className="px-4 py-3 text-slate-500">{o.buyer}</td>
                   <td className="px-4 py-3 font-semibold">{$$(o.total)}</td>
                   <td className="px-4 py-3 font-bold text-emerald-600">{$$(o.comm)}</td>
@@ -1884,11 +1973,11 @@
 
     const AdminUsers = () => {
       const users=[
-        {name:'Grupo Alianza MX',type:'dist',plan:'Pro',orders:142,rev:72300},
-        {name:'Distribuidora del Norte',type:'dist',plan:'Enterprise',orders:218,rev:134200},
-        {name:'Alimentos Centrales SA',type:'dist',plan:'Pro',orders:87,rev:56800},
-        {name:'Abarrotes La Conchita',type:'buyer',plan:'—',orders:34,rev:48200},
-        {name:'Supermercado Familiar',type:'buyer',plan:'—',orders:21,rev:32100},
+        {name:'Diana Distribuciones S.A.',type:'dist',plan:'Pro',orders:142,rev:8420},
+        {name:'Interamérica Alimentos S.A.',type:'dist',plan:'Enterprise',orders:218,rev:15640},
+        {name:'Distribuidora APS S.A.',type:'dist',plan:'Pro',orders:87,rev:6320},
+        {name:'Tienda El Progreso',type:'buyer',plan:'—',orders:34,rev:4820},
+        {name:'Supermercado La Colonia',type:'buyer',plan:'—',orders:21,rev:3210},
         {name:'Restaurante El Buen Sabor',type:'buyer',plan:'—',orders:15,rev:21400},
       ];
       return (
@@ -1933,9 +2022,9 @@
         </div>
         <div className="space-y-4">
           {[
-            {pos:'Banner Principal',dist:'Grupo Alianza MX',prod:'Arroz Extra Premium 5kg',price:350,imp:4820,clicks:312},
-            {pos:'Top Búsqueda #1',dist:'Alimentos Centrales SA',prod:'Café Molido 1kg',price:250,imp:3210,clicks:241},
-            {pos:'Sección Granos',dist:'Distribuidora del Norte',prod:'Frijol Negro 1kg',price:150,imp:1840,clicks:98},
+            {pos:'Banner Principal',dist:'Diana Distribuciones S.A.',prod:'Arroz de Primera 25 lbs',price:35,imp:4820,clicks:312},
+            {pos:'Top Búsqueda #1',dist:'Distribuidora APS S.A.',prod:'Café Grano de Oro 250g',price:25,imp:3210,clicks:241},
+            {pos:'Sección Granos',dist:'Interamérica Alimentos S.A.',prod:'Frijoles Rojos de Seda 1 lb',price:15,imp:1840,clicks:98},
           ].map(s=>(
             <Card key={s.pos} className="p-5">
               <div className="flex items-center justify-between">
@@ -1971,9 +2060,9 @@
       const [cart, setCart] = useState([]);
 
       const USERS = {
-        distributor:{ name:'Grupo Alianza MX', email:'ventas@grupoalianza.mx' },
-        buyer:      { name:'Abarrotes La Conchita', email:'conchita@correo.mx' },
-        admin:      { name:'Admin MarketHub', email:'admin@markethub.mx' },
+        distributor:{ name:'Diana Distribuciones S.A.', email:'ventas@diana.com.sv' },
+        buyer:      { name:'Tienda El Progreso', email:'progreso@correo.com.sv' },
+        admin:      { name:'Admin MarketHub', email:'admin@markethub.sv' },
       };
 
       const login = (r) => {
